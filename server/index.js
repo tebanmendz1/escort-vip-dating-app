@@ -30,7 +30,11 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static uploads & assets with 7 days browser caching for high performance
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'), { maxAge: '7d' }));
+const uploadsDir = process.env.UPLOADS_DIR || (fs.existsSync('/data/uploads') ? '/data/uploads' : path.join(__dirname, 'uploads'));
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
 app.use('/assets', express.static(path.join(rootDir, 'assets'), { maxAge: '7d' }));
 
 // Mount SEO Routes (Robots.txt & Sitemap.xml & Aggressive Landings)

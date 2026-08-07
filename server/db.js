@@ -6,7 +6,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DATA_FILE = path.join(__dirname, 'data_store.json');
+const DATA_DIR = process.env.PERSISTENT_DATA_DIR || (fs.existsSync('/data') ? '/data' : __dirname);
+const DATA_FILE = path.join(DATA_DIR, 'data_store.json');
 
 let prisma = null;
 try {

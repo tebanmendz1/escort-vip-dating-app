@@ -192,17 +192,19 @@ function extractSkokkaPhotos(html, targetUrl) {
   const decodedHtml = html.replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
   const $ = cheerio.load(decodedHtml);
 
-  // 1. Escanear todos los elementos HTML <img>, <source>, <a>, data-src, data-original
-  $('img, source, a').each((i, el) => {
-    pushPhoto($(el).attr('src'));
-    pushPhoto($(el).attr('data-src'));
-    pushPhoto($(el).attr('data-original'));
-    pushPhoto($(el).attr('data-lazy'));
-    pushPhoto($(el).attr('href'));
-    const srcset = $(el).attr('srcset');
-    if (srcset) {
-      srcset.split(',').forEach(s => pushPhoto(s.trim().split(' ')[0]));
-    }
+  // 1. Escanear absolutamente TODOS los elementos DOM y TODOS sus atributos
+  $('*').each((i, el) => {
+    const attribs = el.attribs || {};
+    Object.keys(attribs).forEach(attrName => {
+      const val = attribs[attrName];
+      if (val && typeof val === 'string' && (val.includes('/image/') || val.includes('skokka') || val.includes('.jpg') || val.includes('.png') || val.includes('.webp'))) {
+        if (val.includes(',')) {
+          val.split(',').forEach(s => pushPhoto(s.trim().split(' ')[0]));
+        } else {
+          pushPhoto(val);
+        }
+      }
+    });
   });
 
   // 2. Metatags OpenGraph y Twitter
@@ -211,14 +213,12 @@ function extractSkokkaPhotos(html, targetUrl) {
   });
 
   // 3. Extracción de JSON / JSON-LD Schema
-  $('script[type="application/ld+json"]').each((i, el) => {
-    try {
-      const data = JSON.parse($(el).html());
-      if (data && data.image) {
-        if (Array.isArray(data.image)) data.image.forEach(img => pushPhoto(img));
-        else pushPhoto(data.image);
-      }
-    } catch(e) {}
+  $('script').each((i, el) => {
+    const content = $(el).html() || '';
+    if (content.includes('image') || content.includes('photo') || content.includes('post')) {
+      const matches = content.match(/(?:https?:\/\/[^\s"'<>]+|\/image\/post\/[^\s"'<>]+)(?:\.jpg|\.png|\.jpeg|\.webp|[^\s"'<>]*)/gi);
+      if (matches) matches.forEach(img => pushPhoto(img));
+    }
   });
 
   // 4. Bloques Vue :items o arrays javascript
@@ -245,9 +245,23 @@ function extractSkokkaPhotos(html, targetUrl) {
     pushPhoto(match[1]);
   }
 
-  // 7. Patrón genérico de imágenes de alta resolución
+  // 7. Reconstrucción inteligente de URLs desde hashes de imagen MD5 Skokka (32 caracteres hexadecimales)
+  // Ejemplo: bb49bca2f44e4a4fae2807cae70addcb.jpg -> https://do.skokka.com/image/post/bb/49/bb49bca2f44e4a4fae2807cae70addcb.jpg
+  const md5ImagePattern = /\b([a-f0-9]{32}\.(?:jpg|png|jpeg|webp))\b/gi;
+  let md5Match;
+  while ((md5Match = md5ImagePattern.exec(html)) !== null) {
+    const filename = md5Match[1];
+    const p1 = filename.substring(0, 2);
+    const p2 = filename.substring(2, 4);
+    const fullSkokkaUrl = `https://do.skokka.com/image/post/${p1}/${p2}/${filename}`;
+    pushPhoto(fullSkokkaUrl);
+  }
+
+  // 8. Patrón genérico de imágenes de alta resolución
   const genericPhotoPattern = /(https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp))/gi;
   while ((match = genericPhotoPattern.exec(decodedHtml)) !== null) {
+    pushPhoto(match[1]);
+  }
     pushPhoto(match[1]);
   }
 

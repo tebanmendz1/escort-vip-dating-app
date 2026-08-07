@@ -267,6 +267,58 @@ function extractSkokkaPhotos(html, targetUrl) {
 }
 
 /**
+ * Consulta la API pública de Skokka para obtener todas las fotos originales del anuncio
+ */
+async function fetchSkokkaAdApiPhotos(adId) {
+  if (!adId) return [];
+  const photos = [];
+  const apiUrls = [
+    `https://do.skokka.com/eu/api/ad/${adId}/`,
+    `https://do.skokka.com/api/ad/${adId}/`
+  ];
+
+  for (const apiUrl of apiUrls) {
+    try {
+      const res = await fetch(apiUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Referer': 'https://do.skokka.com/',
+          'Accept': 'application/json, text/plain, */*'
+        }
+      });
+      if (res.ok) {
+        const jsonStr = await res.text();
+        const matches = jsonStr.match(/(?:https?:)?\/\/[^\s"'<>]+\.(?:jpg|png|jpeg|webp)/gi) 
+                     || jsonStr.match(/\/image\/post\/[^\s"'<>]+\.(?:jpg|png|jpeg|webp)/gi);
+        if (matches) {
+          matches.forEach(m => {
+            let clean = m.replace(/\\/g, '');
+            if (clean.startsWith('//')) clean = `https:${clean}`;
+            if (clean.startsWith('/image/')) clean = `https://do.skokka.com${clean}`;
+            if (clean.startsWith('http') && !photos.includes(clean)) {
+              photos.push(clean);
+            }
+          });
+        }
+
+        const md5Matches = jsonStr.match(/\b([a-f0-9]{32}\.(?:jpg|png|jpeg|webp))\b/gi);
+        if (md5Matches) {
+          md5Matches.forEach(filename => {
+            const p1 = filename.substring(0, 2);
+            const p2 = filename.substring(2, 4);
+            const fullUrl = `https://do.skokka.com/image/post/${p1}/${p2}/${filename}`;
+            if (!photos.includes(fullUrl)) photos.push(fullUrl);
+          });
+        }
+      }
+    } catch (e) {
+      console.warn(`[Scraper] Intento API ${apiUrl} omitido:`, e.message);
+    }
+  }
+  return photos;
+}
+
+/**
  * Función Principal para parsear HTML de Skokka e Importar Perfil con Secciones Organizadas y Marca de Agua ESCORTSVIP.DO Central
  */
 export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.skokka.com', customCity = 'Santo Domingo', customGender = 'FEMALE') {
@@ -372,8 +424,23 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     ? `${cleanBio}\n\n${extraDetails.join('\n')}`
     : cleanBio;
 
-  // 8. Extraer Fotos y Estampar Marca de Agua Central ESCORTSVIP.DO (Tapando a Skokka)
-  const rawPhotos = extractSkokkaPhotos(html, targetUrl);
+  // 8. Extraer ID del Anuncio de Skokka
+  const adIdMatch = html.match(/ID del anuncio:\s*([a-zA-Z0-9]+)/i) 
+                 || html.match(/post-phone-button-([a-f0-9]+)/i)
+                 || targetUrl.match(/([a-zA-Z0-9]{7,25})\/?$/);
+  const adId = adIdMatch ? adIdMatch[1] : null;
+
+  let rawPhotos = extractSkokkaPhotos(html, targetUrl);
+
+  if (adId) {
+    console.log(`[Scraper] 🔍 Buscando fotos adicionales en la API de Skokka para ID de anuncio: ${adId}...`);
+    const apiPhotos = await fetchSkokkaAdApiPhotos(adId);
+    apiPhotos.forEach(p => {
+      if (!rawPhotos.includes(p)) rawPhotos.push(p);
+    });
+  }
+
+  console.log(`[Scraper] 📸 Total de fotos candidatas encontradas (${rawPhotos.length}):`, rawPhotos);
 
   const escortId = `scraped_${Date.now()}`;
   const defaultPassword = await bcrypt.hash('123456', 10);

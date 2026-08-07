@@ -263,7 +263,7 @@ export const db = {
       whatsapp: data.whatsapp || '',
       telegram: data.telegram || '',
       hourlyRate: parseFloat(data.hourlyRate) || 150,
-      currency: data.currency || 'USD',
+      currency: data.currency || 'DOP',
       isAvailable: data.isAvailable !== undefined ? data.isAvailable : true,
       isVerified: data.isVerified || false,
       isFeatured: data.isFeatured || false,

@@ -8,7 +8,7 @@ export async function seedInitialData() {
     return;
   }
 
-  console.log('Sembrando datos completos de Escorts con Historias de 24h...');
+  console.log('Sembrando datos completos de Escorts con moneda RD$ DOP...');
   const defaultPass = await bcrypt.hash('123456', 10);
 
   const initialEscorts = [
@@ -18,12 +18,13 @@ export async function seedInitialData() {
       name: 'Valeria Deluxe',
       gender: 'FEMALE',
       age: 23,
-      city: 'Ciudad de México',
-      zone: 'Polanco / Condesa',
-      phone: '+525512345678',
-      whatsapp: '+525512345678',
-      hourlyRate: 200,
-      currency: 'USD',
+      nationality: 'Dominicana',
+      city: 'Santo Domingo',
+      zone: 'Piantini / Naco',
+      phone: '+18095551234',
+      whatsapp: '+18095551234',
+      hourlyRate: 4500,
+      currency: 'DOP',
       isAvailable: true,
       isVerified: true,
       isFeatured: true,
@@ -38,12 +39,13 @@ export async function seedInitialData() {
       name: 'Camila Rose',
       gender: 'FEMALE',
       age: 25,
-      city: 'Guadalajara',
-      zone: 'Providencia',
-      phone: '+523311223344',
-      whatsapp: '+523311223344',
-      hourlyRate: 180,
-      currency: 'USD',
+      nationality: 'Dominicana',
+      city: 'Santiago',
+      zone: 'Los Jardines',
+      phone: '+18095555678',
+      whatsapp: '+18095555678',
+      hourlyRate: 3800,
+      currency: 'DOP',
       isAvailable: true,
       isVerified: true,
       isFeatured: true,
@@ -58,12 +60,13 @@ export async function seedInitialData() {
       name: 'Santiago Sterling',
       gender: 'GAY',
       age: 27,
-      city: 'Ciudad de México',
-      zone: 'Santa Fe / Lomas',
-      phone: '+525599887766',
-      whatsapp: '+525599887766',
-      hourlyRate: 250,
-      currency: 'USD',
+      nationality: 'Dominicana',
+      city: 'Santo Domingo',
+      zone: 'Bella Vista',
+      phone: '+18095559988',
+      whatsapp: '+18095559988',
+      hourlyRate: 5000,
+      currency: 'DOP',
       isAvailable: true,
       isVerified: true,
       isFeatured: true,
@@ -78,12 +81,13 @@ export async function seedInitialData() {
       name: 'Nicole Star',
       gender: 'TRANS',
       age: 24,
-      city: 'Monterrey',
-      zone: 'San Pedro',
-      phone: '+528188776655',
-      whatsapp: '+528188776655',
-      hourlyRate: 190,
-      currency: 'USD',
+      nationality: 'Dominicana',
+      city: 'Punta Cana',
+      zone: 'Bávaro',
+      phone: '+18095554433',
+      whatsapp: '+18095554433',
+      hourlyRate: 4000,
+      currency: 'DOP',
       isAvailable: true,
       isVerified: true,
       isFeatured: false,
@@ -99,14 +103,13 @@ export async function seedInitialData() {
     await db.addPhoto(created.id, created.avatarUrl, true);
     await db.addPhoto(created.id, 'assets/images/escorts/female1.jpg', false);
 
-    // Seed 24h story for Valeria and Camila
     if (created.name === 'Valeria Deluxe' || created.name === 'Camila Rose') {
-      await db.addStory(created.id, created.avatarUrl, 'IMAGE', '¡Hola amor! Disponible hoy en Polanco ✨');
+      await db.addStory(created.id, created.avatarUrl, 'IMAGE', '¡Hola amor! Disponible hoy en Piantini ✨');
       await db.addStory(created.id, 'assets/images/escorts/female3.jpg', 'IMAGE', 'Pasa un momento VIP conmigo 👑');
     }
   }
 
-  console.log('✅ Datos iniciales con historias sembrados con éxito.');
+  console.log('✅ Datos iniciales sembrados con moneda RD$ DOP.');
 }
 
 if (process.argv[1] && process.argv[1].includes('seed.js')) {

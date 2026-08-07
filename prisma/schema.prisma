@@ -23,7 +23,7 @@ model Escort {
   whatsapp              String
   telegram              String?
   hourlyRate            Float    @default(0)
-  currency              String   @default("USD")
+  currency              String   @default("DOP")
   isAvailable           Boolean  @default(true)
   isVerified            Boolean  @default(false)
   isFeatured            Boolean  @default(false)

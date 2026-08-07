@@ -3,11 +3,10 @@
 <head>
 	<title>Registro de Escorts | Plataforma VIP</title>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, minimal-ui, viewport-fit=cover">
-	<meta name="theme-color" content="#FF50A2">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+	<meta name="theme-color" content="#FF2A7A">
 	<link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.png">
 	<link rel="manifest" href="manifest.json">
-	<link href="assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet">
 	<link rel="stylesheet" class="main-css" type="text/css" href="assets/css/style.css">
 	<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -25,7 +24,7 @@
 						</a>
 					</div>
 					<div class="mid-content">
-						<h5 class="title mb-0">Registro de Escorts</h5>
+						<h5 class="title mb-0">Registro de Proveedor</h5>
 					</div>
 					<div class="right-content">
 						<a href="escort-login.html" class="text-primary font-14 font-w600">Iniciar Sesión</a>
@@ -40,21 +39,31 @@
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-body p-4">
 						<div class="text-center mb-4">
-							<h3 class="font-w700 text-dark">Únete como Proveedor</h3>
-							<p class="text-muted font-14">Crea tu perfil profesional para ofrecer tus servicios de acompañante (Mujeres, Hombres y Trans).</p>
+							<h3 class="font-w700 text-dark">Únete como Modelo / Escort</h3>
+							<p class="text-muted font-14">Publica tus servicios y recibe clientes directamente en tu WhatsApp.</p>
 						</div>
 
 						<div id="alertBox" class="alert alert-danger d-none" role="alert"></div>
 
 						<form id="registerForm">
 							<div class="mb-3">
-								<label class="form-label font-w600">Nombre de Artista / Perfil *</label>
-								<input type="text" class="form-control" id="name" placeholder="Ej. Valeria Deluxe" required>
+								<label class="form-label font-w600">Nombre / Alias *</label>
+								<input type="text" class="form-control" id="name" placeholder="Ej. Camila Rose" required>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label font-w600">Correo Electrónico *</label>
+								<input type="email" class="form-control" id="email" placeholder="tu-correo@ejemplo.com" required>
+							</div>
+
+							<div class="mb-3">
+								<label class="form-label font-w600">Contraseña *</label>
+								<input type="password" class="form-control" id="password" placeholder="••••••••" required>
 							</div>
 
 							<div class="row">
 								<div class="col-6 mb-3">
-									<label class="form-label font-w600">Género / Identidad *</label>
+									<label class="form-label font-w600">Género *</label>
 									<select class="form-select" id="gender" required>
 										<option value="FEMALE">Mujer</option>
 										<option value="MALE">Hombre</option>
@@ -75,6 +84,7 @@
 								<div class="col-6 mb-3">
 									<label class="form-label font-w600">Nacionalidad *</label>
 									<select class="form-select" id="nationality" required>
+										<option value="Dominicana">Dominicana 🇩🇴</option>
 										<option value="Mexicana">Mexicana 🇲🇽</option>
 										<option value="Colombiana">Colombiana 🇨🇴</option>
 										<option value="Venezolana">Venezolana 🇻🇪</option>
@@ -83,19 +93,6 @@
 										<option value="Brasileña">Brasileña 🇧🇷</option>
 										<option value="Chilena">Chilena 🇨🇱</option>
 										<option value="Peruana">Peruana 🇵🇪</option>
-										<option value="Ecuatoriana">Ecuatoriana 🇪🇨</option>
-										<option value="Uruguaya">Uruguaya 🇺🇾</option>
-										<option value="Paraguaya">Paraguaya 🇵🇾</option>
-										<option value="Boliviana">Boliviana 🇧🇴</option>
-										<option value="Costarricense">Costarricense 🇨🇷</option>
-										<option value="Cubana">Cubana 🇨🇺</option>
-										<option value="Dominicana">Dominicana 🇩🇴</option>
-										<option value="Salvadoreña">Salvadoreña 🇸🇻</option>
-										<option value="Guatemalteca">Guatemalteca 🇬🇹</option>
-										<option value="Hondureña">Hondureña 🇭🇳</option>
-										<option value="Nicaragüense">Nicaragüense 🇳🇮</option>
-										<option value="Panameña">Panameña 🇵🇦</option>
-										<option value="Puertorriqueña">Puertorriqueña 🇵🇷</option>
 										<option value="Otra">Otra Nacionalidad 🌎</option>
 									</select>
 								</div>

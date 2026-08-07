@@ -6,7 +6,7 @@
 
 	<!-- Meta -->
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, minimal-ui, viewport-fit=cover">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 	<meta name="theme-color" content="#FF2A7A">
 	<meta name="description" content="Plataforma de servicios de acompañantes VIP en formato Mobile Dating App. Contacto directo por WhatsApp.">
 	
@@ -22,7 +22,7 @@
     <!-- Google Fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 	<style>
 		:root {
@@ -33,12 +33,14 @@
 			--text-main: #FFFFFF;
 		}
 
-		body {
-			font-family: 'Poppins', sans-serif;
+		html, body {
 			background-color: #0d0e15;
 			color: #ffffff;
 			margin: 0;
 			padding-bottom: 75px;
+			touch-action: manipulation !important;
+			-webkit-user-select: none !important;
+			user-select: none !important;
 		}
 
 		/* Top Header Bar */
@@ -46,7 +48,7 @@
 			position: sticky;
 			top: 0;
 			z-index: 1000;
-			background: rgba(15, 15, 20, 0.92);
+			background: rgba(15, 15, 20, 0.94);
 			backdrop-filter: blur(12px);
 			border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 			padding: 12px 16px;
@@ -155,6 +157,7 @@
 			box-shadow: 0 6px 16px rgba(255, 215, 0, 0.2);
 			cursor: pointer;
 			flex-shrink: 0;
+			pointer-events: auto !important;
 		}
 		.featured-card img { width: 100%; height: 100%; object-fit: cover; }
 		.featured-badge-star {
@@ -195,6 +198,7 @@
 			background: #181822;
 			box-shadow: 0 15px 35px rgba(0,0,0,0.4);
 			border: 1px solid rgba(255, 255, 255, 0.1);
+			pointer-events: auto !important;
 		}
 		.dating-swipe-card img { width: 100%; height: 100%; object-fit: cover; }
 		.card-overlay-gradient {
@@ -208,6 +212,7 @@
 			flex-direction: column;
 			justify-content: flex-end;
 			padding: 22px;
+			pointer-events: auto !important;
 		}
 		.badge-status-online {
 			display: inline-flex;
@@ -254,7 +259,7 @@
 			margin: 0;
 			color: #fff;
 		}
-		.escort-rate-tag { font-size: 20px; font-weight: 800; color: #FF50A2; }
+		.escort-rate-tag { font-size: 18px; font-weight: 800; color: #FF50A2; }
 
 		/* Action Buttons */
 		.swipe-actions {
@@ -305,6 +310,7 @@
 			background: #181822;
 			border: 1px solid rgba(255, 255, 255, 0.08);
 			cursor: pointer;
+			pointer-events: auto !important;
 		}
 		.badoo-card img { width: 100%; height: 100%; object-fit: cover; }
 		.badoo-overlay {
@@ -371,17 +377,17 @@
 		/* PWA Install Banner Modal */
 		#pwaInstallModal {
 			position: fixed;
-			bottom: 80px;
-			left: 16px;
-			right: 16px;
-			max-width: 420px;
+			bottom: 75px;
+			left: 12px;
+			right: 12px;
+			max-width: 440px;
 			margin: 0 auto;
 			background: linear-gradient(135deg, #1d1e2c 0%, #251624 100%);
-			border: 1px solid rgba(255, 42, 122, 0.4);
+			border: 1px solid rgba(255, 42, 122, 0.5);
 			border-radius: 20px;
 			padding: 16px;
-			z-index: 990;
-			box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+			z-index: 10050;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.8);
 		}
 
 		.search-drawer {
@@ -635,7 +641,7 @@
 					<i class="fa-solid fa-mobile-screen-button text-primary font-28"></i>
 					<div>
 						<h6 class="font-w700 text-white mb-0">Instalar App Escort VIP</h6>
-						<small class="text-white-50">Acceso rápido desde tu pantalla de inicio</small>
+						<small id="pwaTextDesc" class="text-white-50 font-12">Acceso directo desde tu pantalla de inicio</small>
 					</div>
 				</div>
 				<div class="d-flex gap-2">
@@ -689,6 +695,7 @@
 				<label class="form-label font-w600 text-light">Nacionalidad</label>
 				<select id="filterNationality" class="form-select bg-dark text-white border-secondary">
 					<option value="">Todas las Nacionalidades</option>
+					<option value="Dominicana">Dominicana 🇩🇴</option>
 					<option value="Mexicana">Mexicana 🇲🇽</option>
 					<option value="Colombiana">Colombiana 🇨🇴</option>
 					<option value="Venezolana">Venezolana 🇻🇪</option>
@@ -703,7 +710,6 @@
 					<option value="Boliviana">Boliviana 🇧🇴</option>
 					<option value="Costarricense">Costarricense 🇨🇷</option>
 					<option value="Cubana">Cubana 🇨🇺</option>
-					<option value="Dominicana">Dominicana 🇩🇴</option>
 					<option value="Salvadoreña">Salvadoreña 🇸🇻</option>
 					<option value="Guatemalteca">Guatemalteca 🇬🇹</option>
 					<option value="Hondureña">Hondureña 🇭🇳</option>
@@ -735,13 +741,13 @@
 			<!-- Ciudad / Zona -->
 			<div class="mb-3">
 				<label class="form-label font-w600 text-light">Ciudad / Zona</label>
-				<input type="text" id="filterCityInput" class="form-control bg-dark text-white border-secondary" placeholder="Ej. Polanco, Cancún, Guadalajara">
+				<input type="text" id="filterCityInput" class="form-control bg-dark text-white border-secondary" placeholder="Ej. Santo Domingo, Santiago, Punta Cana">
 			</div>
 
 			<!-- Tarifa Máxima por Hora -->
 			<div class="mb-3">
-				<label class="form-label font-w600 text-light">Tarifa Máxima ($ USD/hr)</label>
-				<input type="number" id="filterMaxRate" class="form-control bg-dark text-white border-secondary" placeholder="Ej. 250">
+				<label class="form-label font-w600 text-light">Tarifa Máxima (RD$ DOP/hr)</label>
+				<input type="number" id="filterMaxRate" class="form-control bg-dark text-white border-secondary" placeholder="Ej. 5000">
 			</div>
 
 			<!-- Solo Disponibles -->
@@ -859,24 +865,53 @@
 			document.getElementById('ageVerifyModal').style.display = 'none';
 		});
 
-		// PWA Install prompt handling
+		// PWA Install Prompt Display Logic (Android / iOS / Chrome)
 		let deferredPrompt = null;
+		const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+		if (isIOS) {
+			const descText = document.getElementById('pwaTextDesc');
+			if (descText) descText.textContent = "Toca Compartir ⎋ en Safari y 'Agregar a Inicio'";
+			const btnInstall = document.getElementById('btnPwaInstall');
+			if (btnInstall) btnInstall.textContent = "Ver Instrucciones";
+		}
+
+		if (!localStorage.getItem('pwa_dismissed')) {
+			setTimeout(() => {
+				document.getElementById('pwaInstallModal').classList.remove('d-none');
+			}, 2000);
+		}
+
 		window.addEventListener('beforeinstallprompt', (e) => {
 			e.preventDefault();
 			deferredPrompt = e;
-			document.getElementById('pwaInstallModal').classList.remove('d-none');
+			if (!localStorage.getItem('pwa_dismissed')) {
+				document.getElementById('pwaInstallModal').classList.remove('d-none');
+			}
 		});
+
 		document.getElementById('btnPwaInstall').addEventListener('click', () => {
 			if (deferredPrompt) {
 				deferredPrompt.prompt();
 				deferredPrompt.userChoice.then(() => {
 					document.getElementById('pwaInstallModal').classList.add('d-none');
+					localStorage.setItem('pwa_dismissed', 'true');
 					deferredPrompt = null;
 				});
+			} else if (isIOS) {
+				alert("Para instalar en iPhone/iPad:\n1. Toca el botón 'Compartir' en Safari (icono con flecha hacia arriba).\n2. Elige 'Agregar a Inicio'.");
+				document.getElementById('pwaInstallModal').classList.add('d-none');
+				localStorage.setItem('pwa_dismissed', 'true');
+			} else {
+				alert("Para instalar esta App:\nAbre el menú de tu navegador y selecciona 'Instalar aplicación' o 'Agregar a la pantalla principal'.");
+				document.getElementById('pwaInstallModal').classList.add('d-none');
+				localStorage.setItem('pwa_dismissed', 'true');
 			}
 		});
+
 		document.getElementById('btnPwaClose').addEventListener('click', () => {
 			document.getElementById('pwaInstallModal').classList.add('d-none');
+			localStorage.setItem('pwa_dismissed', 'true');
 		});
 
 		// Check logged user to update profile link
@@ -884,6 +919,7 @@
 		if (user) {
 			const navLink = document.getElementById('navProfileLink');
 			navLink.href = 'escort-dashboard.html';
+			navLink.innerHTML = '<i class="fa-solid fa-circle-user"></i> Mi Cuenta';
 		}
 
 		async function fetchEscorts() {
@@ -942,7 +978,7 @@
 					<span class="featured-badge-star">⭐ VIP</span>
 					<div class="featured-overlay">
 						<h6 class="featured-name">${escort.name}</h6>
-						<small class="text-warning font-11 font-w700">$${escort.hourlyRate} USD</small>
+						<small class="text-warning font-11 font-w700">RD$ ${escort.hourlyRate} DOP</small>
 					</div>
 				`;
 				container.appendChild(card);
@@ -982,15 +1018,15 @@
 				: `<div class="badge-status-busy"><i class="fa-solid fa-circle font-8"></i> OCUPADA(O)</div>`;
 
 			const verifiedBadge = escort.isVerified ? `<span class="badge-verified"><i class="fa-solid fa-check"></i> Verificado</span>` : '';
-			const storyBadge = hasStories ? `<span class="story-badge-label" onclick="event.stopPropagation(); openStoryPlayerById('${escort.id}')"><i class="fa-solid fa-circle-play me-1"></i> Ver Historia (24h)</span>` : '';
+			const storyBadge = hasStories ? `<span class="story-badge-label" onclick="event.stopPropagation(); openStoryPlayerById('${escort.id}')"><i class="fa-solid fa-circle-play me-1"></i> Ver Historia</span>` : '';
 
 			const whatsappClean = escort.whatsapp ? escort.whatsapp.replace(/\D/g, '') : '';
 			const whatsappMsg = encodeURIComponent(`Hola ${escort.name}, vi tu perfil en Escort VIP. ¿Tienes disponibilidad de servicio?`);
 			const whatsappLink = `https://wa.me/${whatsappClean}?text=${whatsappMsg}`;
 
 			container.innerHTML = `
-				<div class="dating-swipe-card">
-					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}" style="cursor: pointer;" onclick="handleAvatarClick('${escort.id}')">
+				<div class="dating-swipe-card" onclick="openDetailModal('${escort.id}')">
+					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
 					${storyBadge}
 					<div class="card-overlay-gradient">
 						<div class="d-flex align-items-center gap-1 mb-1">
@@ -998,17 +1034,17 @@
 							${verifiedBadge}
 						</div>
 						<div class="d-flex justify-content-between align-items-end mb-1">
-							<h2 class="escort-profile-title" onclick="openDetailModal('${escort.id}')" style="cursor: pointer;">${escort.name}, ${escort.age}</h2>
-							<div class="escort-rate-tag">$${escort.hourlyRate} <small class="font-12 text-white opacity-75">/hr</small></div>
+							<h2 class="escort-profile-title">${escort.name}, ${escort.age}</h2>
+							<div class="escort-rate-tag">RD$ ${escort.hourlyRate} <small class="font-12 text-white opacity-75">DOP/hr</small></div>
 						</div>
 						<div class="text-light font-14 mb-1">
 							<i class="fa-solid fa-location-dot text-primary me-1"></i> ${escort.city} ${escort.zone ? '• ' + escort.zone : ''}
 						</div>
 						<div class="text-white-50 font-12 mb-2">
-							🌐 ${escort.nationality || 'Mexicana'} • 💃 ${escort.bodyType || 'Atlética'}
+							🌐 ${escort.nationality || 'Dominicana'} • 💃 ${escort.bodyType || 'Atlética'}
 						</div>
 						<p class="text-white-50 font-13 line-clamp-2 mb-2">${escort.services || 'Acompañante VIP'}</p>
-						<button class="btn btn-outline-light btn-sm rounded-pill w-100" onclick="openDetailModal('${escort.id}')">
+						<button class="btn btn-outline-light btn-sm rounded-pill w-100" onclick="event.stopPropagation(); openDetailModal('${escort.id}')">
 							<i class="fa-solid fa-circle-info me-1"></i> Ver Perfil Completo
 						</button>
 					</div>
@@ -1017,7 +1053,10 @@
 
 			const waBtn = document.getElementById('swipeWhatsappBtn');
 			waBtn.href = whatsappLink;
-			waBtn.onclick = () => EscortAPI.getWhatsappLead(escort.id);
+			waBtn.onclick = (e) => {
+				e.stopPropagation();
+				EscortAPI.getWhatsappLead(escort.id);
+			};
 		}
 
 		function renderGrid() {
@@ -1035,7 +1074,7 @@
 				const verifiedIcon = escort.isVerified ? '<i class="fa-solid fa-circle-check text-primary font-12 ms-1"></i>' : '';
 				const card = document.createElement('div');
 				card.className = 'badoo-card';
-				card.onclick = () => handleAvatarClick(escort.id);
+				card.onclick = () => openDetailModal(escort.id);
 				card.innerHTML = `
 					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
 					<div class="badoo-overlay">
@@ -1043,8 +1082,8 @@
 							<span style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
 							<h4 class="badoo-name">${escort.name}, ${escort.age} ${verifiedIcon}</h4>
 						</div>
-						<div class="badoo-meta mb-1"><i class="fa-solid fa-location-dot me-1"></i>${escort.city} • ${escort.nationality || 'Latina'}</div>
-						<div class="badoo-price">$${escort.hourlyRate} USD/hr</div>
+						<div class="badoo-meta mb-1"><i class="fa-solid fa-location-dot me-1"></i>${escort.city} • ${escort.nationality || 'Dominicana'}</div>
+						<div class="badoo-price">RD$ ${escort.hourlyRate} DOP/hr</div>
 					</div>
 				`;
 				container.appendChild(card);
@@ -1093,7 +1132,6 @@
 
 			const story = activeStoriesList[currentStoryIndex];
 
-			// Render Progress Bar Segments
 			const progressContainer = document.getElementById('storyProgressContainer');
 			progressContainer.innerHTML = '';
 			activeStoriesList.forEach((s, idx) => {
@@ -1107,7 +1145,6 @@
 				progressContainer.appendChild(seg);
 			});
 
-			// Render Media
 			const mediaContainer = document.getElementById('storyContentMedia');
 			const isVideo = story.mediaType === 'VIDEO' || story.url.endsWith('.mp4') || story.url.endsWith('.webm');
 			if (isVideo) {
@@ -1116,7 +1153,6 @@
 				mediaContainer.innerHTML = `<img src="${story.url}" alt="Historia 24h">`;
 			}
 
-			// Render Caption
 			const captionBox = document.getElementById('storyCaptionBox');
 			if (story.caption) {
 				captionBox.textContent = story.caption;
@@ -1125,7 +1161,6 @@
 				captionBox.classList.add('d-none');
 			}
 
-			// Auto advance story after 5 seconds
 			storyTimer = setTimeout(() => {
 				currentStoryIndex++;
 				renderStoryItem();
@@ -1238,10 +1273,11 @@
 			document.getElementById('lightboxOverlay').classList.add('d-none');
 		});
 
-		// Modal Detail Function
+		// UNIVERSAL DETAIL MODAL FUNCTION (iOS & Android Touch Support)
 		window.openDetailModal = async (id) => {
 			try {
 				const escort = await EscortAPI.getEscortDetail(id);
+				if (!escort) return;
 				const hasStories = escort.stories && escort.stories.length > 0;
 				const verifiedBadge = escort.isVerified ? '<span class="badge bg-primary ms-2"><i class="fa-solid fa-check me-1"></i> Verificado</span>' : '';
 				document.getElementById('modalEscortName').innerHTML = `${escort.name}, ${escort.age} ${verifiedBadge}`;
@@ -1282,11 +1318,11 @@
 						<div class="row text-center">
 							<div class="col-4 border-end border-secondary">
 								<span class="text-white-50 font-11 d-block">Tarifa</span>
-								<strong class="font-16 text-primary">$${escort.hourlyRate} USD</strong>
+								<strong class="font-16 text-primary">RD$ ${escort.hourlyRate} DOP</strong>
 							</div>
 							<div class="col-4 border-end border-secondary">
 								<span class="text-white-50 font-11 d-block">Nacionalidad</span>
-								<strong class="font-13 text-white">${escort.nationality || 'Latina'}</strong>
+								<strong class="font-13 text-white">${escort.nationality || 'Dominicana'}</strong>
 							</div>
 							<div class="col-4">
 								<span class="text-white-50 font-11 d-block">Cuerpo</span>
@@ -1317,7 +1353,8 @@
 					</a>
 				`;
 
-				const modal = new bootstrap.Modal(document.getElementById('escortModal'));
+				const modalElement = document.getElementById('escortModal');
+				const modal = new bootstrap.Modal(modalElement, { backdrop: true, keyboard: true });
 				modal.show();
 			} catch (e) {
 				console.error(e);

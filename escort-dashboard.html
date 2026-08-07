@@ -211,26 +211,38 @@
 			border-radius: 25px;
 			transition: all 0.25s ease;
 		}
-		/* Dashboard Quick Navigation Pill Bar */
-		.dash-tab-btn {
-			background: #18192B !important;
-			color: #CBD5E1 !important;
-			border: 1px solid rgba(255, 255, 255, 0.16) !important;
-			font-weight: 700 !important;
-			font-size: 13px !important;
-			padding: 10px 18px !important;
-			border-radius: 25px !important;
+		/* Aesthetic App Launcher Cards */
+		.dash-menu-card {
+			background: #141523 !important;
+			border: 1px solid rgba(255, 255, 255, 0.14) !important;
+			border-radius: 22px !important;
+			padding: 22px 14px !important;
+			text-align: center !important;
 			cursor: pointer !important;
-			transition: all 0.2s ease !important;
-			white-space: nowrap !important;
-			display: inline-flex !important;
+			transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+			height: 100% !important;
+			display: flex !important;
+			flex-direction: column !important;
 			align-items: center !important;
+			justify-content: center !important;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 		}
-		.dash-tab-btn.active, .dash-tab-btn:hover {
-			background: linear-gradient(135deg, #FF2A7A 0%, #E02875 100%) !important;
-			color: #FFFFFF !important;
+		.dash-menu-card:hover, .dash-menu-card:active {
+			transform: translateY(-4px) scale(1.02) !important;
 			border-color: #FF2A7A !important;
-			box-shadow: 0 4px 15px rgba(255, 42, 122, 0.4) !important;
+			box-shadow: 0 12px 30px rgba(255, 42, 122, 0.35) !important;
+			background: #1C1D30 !important;
+		}
+		.dash-menu-card .icon-avatar {
+			width: 54px !important;
+			height: 54px !important;
+			border-radius: 18px !important;
+			display: flex !important;
+			align-items: center !important;
+			justify-content: center !important;
+			font-size: 22px !important;
+			color: #FFFFFF !important;
+			margin-bottom: 12px !important;
 		}
 	</style>
 </head>
@@ -299,35 +311,86 @@
 				</div>
 			</div>
 
-			<!-- BOTONERA MÓVIL DE NAVEGACIÓN RÁPIDA -->
-			<div class="dashboard-nav-pills mb-4 overflow-auto py-1">
-				<div class="d-flex gap-2" style="white-space: nowrap;">
-					<button class="dash-tab-btn active" id="tabBtn-all" onclick="showDashboardTab('all')">
-						<i class="fa-solid fa-grip me-1"></i> Ver Todo
-					</button>
-					<button class="dash-tab-btn" id="tabBtn-promo" onclick="showDashboardTab('promo')">
-						<i class="fa-solid fa-crown text-warning me-1"></i> Destacar VIP
-					</button>
-					<button class="dash-tab-btn" id="tabBtn-stories" onclick="showDashboardTab('stories')">
-						<i class="fa-solid fa-circle-play text-primary me-1"></i> Historias 24h
-					</button>
-					<button class="dash-tab-btn" id="tabBtn-profile" onclick="showDashboardTab('profile')">
-						<i class="fa-solid fa-user-pen text-info me-1"></i> Editar Perfil
-					</button>
-					<button class="dash-tab-btn" id="tabBtn-gallery" onclick="showDashboardTab('gallery')">
-						<i class="fa-solid fa-images text-success me-1"></i> Galería
-					</button>
-					<button class="dash-tab-btn" id="tabBtn-tips" onclick="showDashboardTab('tips')">
-						<i class="fa-solid fa-lightbulb text-warning me-1"></i> Consejos
-					</button>
-					<button class="dash-tab-btn" id="tabBtn-security" onclick="showDashboardTab('security')">
-						<i class="fa-solid fa-lock text-danger me-1"></i> Contraseña
-					</button>
+			<!-- GRID DE MÓDULOS DE NAVEGACIÓN ESTÉTICA APP LAUNCHER -->
+			<div id="dashLauncherGrid" class="mb-4">
+				<h6 class="font-w800 text-white-50 font-12 mb-3" style="letter-spacing: 1.2px;">MÓDULOS DE GESTIÓN Y PANEL DE CONTROL</h6>
+				
+				<div class="row g-3">
+					<!-- Módulo 1: Destacar VIP -->
+					<div class="col-6 col-md-4">
+						<div class="dash-menu-card" onclick="openDashboardModule('promo')">
+							<div class="icon-avatar" style="background: linear-gradient(135deg, #FF2A7A 0%, #FF50A2 100%); box-shadow: 0 4px 15px rgba(255, 42, 122, 0.4);">
+								<i class="fa-solid fa-crown"></i>
+							</div>
+							<h6 class="font-w800 text-white mb-1">Destacar VIP</h6>
+							<small class="text-white-50 font-11">Planes 24h, 4 y 7 días</small>
+						</div>
+					</div>
+
+					<!-- Módulo 2: Historias 24h -->
+					<div class="col-6 col-md-4">
+						<div class="dash-menu-card" onclick="openDashboardModule('stories')">
+							<div class="icon-avatar" style="background: linear-gradient(135deg, #7928CA 0%, #B800FF 100%); box-shadow: 0 4px 15px rgba(121, 40, 202, 0.4);">
+								<i class="fa-solid fa-circle-play"></i>
+							</div>
+							<h6 class="font-w800 text-white mb-1">Historias 24h</h6>
+							<small class="text-white-50 font-11">Publica estado rosa activo</small>
+						</div>
+					</div>
+
+					<!-- Módulo 3: Editar Perfil -->
+					<div class="col-6 col-md-4">
+						<div class="dash-menu-card" onclick="openDashboardModule('profile')">
+							<div class="icon-avatar" style="background: linear-gradient(135deg, #0072FF 0%, #00C6FF 100%); box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);">
+								<i class="fa-solid fa-user-pen"></i>
+							</div>
+							<h6 class="font-w800 text-white mb-1">Editar Perfil</h6>
+							<small class="text-white-50 font-11">Tarifa, datos y biografía</small>
+						</div>
+					</div>
+
+					<!-- Módulo 4: Mi Galería -->
+					<div class="col-6 col-md-4">
+						<div class="dash-menu-card" onclick="openDashboardModule('gallery')">
+							<div class="icon-avatar" style="background: linear-gradient(135deg, #11998E 0%, #38EF7D 100%); box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);">
+								<i class="fa-solid fa-images"></i>
+							</div>
+							<h6 class="font-w800 text-white mb-1">Mi Galería</h6>
+							<small class="text-white-50 font-11">Fotos y marca de agua</small>
+						</div>
+					</div>
+
+					<!-- Módulo 5: Consejos -->
+					<div class="col-6 col-md-4">
+						<div class="dash-menu-card" onclick="openDashboardModule('tips')">
+							<div class="icon-avatar" style="background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%); box-shadow: 0 4px 15px rgba(255, 128, 8, 0.4);">
+								<i class="fa-solid fa-lightbulb"></i>
+							</div>
+							<h6 class="font-w800 text-white mb-1">Consejos</h6>
+							<small class="text-white-50 font-11">Atraer más clientes VIP</small>
+						</div>
+					</div>
+
+					<!-- Módulo 6: Seguridad -->
+					<div class="col-6 col-md-4">
+						<div class="dash-menu-card" onclick="openDashboardModule('security')">
+							<div class="icon-avatar" style="background: linear-gradient(135deg, #EB3349 0%, #F45C43 100%); box-shadow: 0 4px 15px rgba(235, 51, 73, 0.4);">
+								<i class="fa-solid fa-lock"></i>
+							</div>
+							<h6 class="font-w800 text-white mb-1">Seguridad</h6>
+							<small class="text-white-50 font-11">Cambiar mi contraseña</small>
+						</div>
+					</div>
 				</div>
 			</div>
 
-			<!-- AVISO DE PROMOCIÓN & DESTACAR PERFIL VIP -->
-			<div id="dash-sec-promo" class="dash-card position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, #1D1429 0%, #2D1229 100%) !important; border: 2px solid #FF2A7A !important; box-shadow: 0 10px 30px rgba(255, 42, 122, 0.25) !important;">
+			<!-- AVISO DE PROMOCIÓN & DESTACAR PERFIL VIP (Oculto por defecto) -->
+			<div id="dash-sec-promo" class="dash-card position-relative overflow-hidden mb-4 d-none" style="background: linear-gradient(135deg, #1D1429 0%, #2D1229 100%) !important; border: 2px solid #FF2A7A !important; box-shadow: 0 10px 30px rgba(255, 42, 122, 0.25) !important;">
+				<div class="mb-3">
+					<button class="btn btn-outline-light btn-sm rounded-pill font-w600" onclick="closeDashboardModule()">
+						<i class="fa-solid fa-arrow-left me-1"></i> Volver al Menú Principal
+					</button>
+				</div>
 				<div class="d-flex align-items-center justify-content-between mb-3">
 					<div>
 						<span class="badge bg-warning text-dark font-w800 px-3 py-2 rounded-pill mb-2 font-12"><i class="fa-solid fa-crown me-1"></i> PLANES DE PROMOCIÓN VIP</span>
@@ -468,7 +531,12 @@
 			</div>
 
 			<!-- PUBLICAR HISTORIA DE 24 HORAS -->
-			<div id="dash-sec-stories" class="dash-card" style="border: 2px solid #FF2A7A !important;">
+			<div id="dash-sec-stories" class="dash-card d-none" style="border: 2px solid #FF2A7A !important;">
+				<div class="mb-3">
+					<button class="btn btn-outline-light btn-sm rounded-pill font-w600" onclick="closeDashboardModule()">
+						<i class="fa-solid fa-arrow-left me-1"></i> Volver al Menú Principal
+					</button>
+				</div>
 				<div class="d-flex align-items-center gap-2 mb-1">
 					<i class="fa-solid fa-circle-play text-primary font-24"></i>
 					<h5 class="dash-card-title mb-0">Publicar Historia de 24 Horas</h5>
@@ -497,7 +565,12 @@
 			</div>
 
 			<!-- SMART PROFILE COACH (Consejos Inteligentes) -->
-			<div id="dash-sec-tips" class="dash-card">
+			<div id="dash-sec-tips" class="dash-card d-none">
+				<div class="mb-3">
+					<button class="btn btn-outline-light btn-sm rounded-pill font-w600" onclick="closeDashboardModule()">
+						<i class="fa-solid fa-arrow-left me-1"></i> Volver al Menú Principal
+					</button>
+				</div>
 				<h5 class="dash-card-title">
 					<i class="fa-solid fa-lightbulb text-warning me-2"></i> Consejos Inteligentes para Atraer más Clientes
 				</h5>
@@ -508,7 +581,12 @@
 			</div>
 
 			<!-- Profile Info Form High Contrast -->
-			<div id="dash-sec-profile" class="dash-card">
+			<div id="dash-sec-profile" class="dash-card d-none">
+				<div class="mb-3">
+					<button class="btn btn-outline-light btn-sm rounded-pill font-w600" onclick="closeDashboardModule()">
+						<i class="fa-solid fa-arrow-left me-1"></i> Volver al Menú Principal
+					</button>
+				</div>
 				<h5 class="dash-card-title">Editar Información del Perfil</h5>
 				<p class="dash-card-sub">Mantén tus datos actualizados para mejorar tu posicionamiento.</p>
 
@@ -588,7 +666,12 @@
 			</div>
 
 			<!-- Gallery & Media Upload High Contrast -->
-			<div id="dash-sec-gallery" class="dash-card">
+			<div id="dash-sec-gallery" class="dash-card d-none">
+				<div class="mb-3">
+					<button class="btn btn-outline-light btn-sm rounded-pill font-w600" onclick="closeDashboardModule()">
+						<i class="fa-solid fa-arrow-left me-1"></i> Volver al Menú Principal
+					</button>
+				</div>
 				<h5 class="dash-card-title">Galería de Fotos y Videos</h5>
 				<p class="dash-card-sub">La plataforma aplicará automáticamente la marca de agua <strong>ESCORT VIP</strong> a tus fotografías.</p>
 
@@ -610,7 +693,12 @@
 			</div>
 
 			<!-- Cambiar Contraseña Card -->
-			<div id="dash-sec-security" class="dash-card">
+			<div id="dash-sec-security" class="dash-card d-none">
+				<div class="mb-3">
+					<button class="btn btn-outline-light btn-sm rounded-pill font-w600" onclick="closeDashboardModule()">
+						<i class="fa-solid fa-arrow-left me-1"></i> Volver al Menú Principal
+					</button>
+				</div>
 				<h5 class="dash-card-title"><i class="fa-solid fa-key text-warning me-2"></i> Cambiar Contraseña</h5>
 				<p class="dash-card-sub">Actualiza tu clave de acceso de manera segura.</p>
 				<div id="passAlert" class="alert d-none font-w600 mb-3"></div>
@@ -1068,30 +1156,37 @@
 				viewCard.classList.remove('d-none');
 				viewLbtr.classList.add('d-none');
 			}
-		window.showDashboardTab = (tabName) => {
-			const allTabs = ['promo', 'stories', 'tips', 'profile', 'gallery', 'security'];
+		window.openDashboardModule = (modName) => {
+			const allMods = ['promo', 'stories', 'tips', 'profile', 'gallery', 'security'];
 			
-			document.querySelectorAll('.dash-tab-btn').forEach(btn => btn.classList.remove('active'));
-			const activeBtn = document.getElementById(`tabBtn-${tabName}`);
-			if (activeBtn) activeBtn.classList.add('active');
+			const launcher = document.getElementById('dashLauncherGrid');
+			if (launcher) launcher.classList.add('d-none');
 
-			if (tabName === 'all') {
-				allTabs.forEach(t => {
-					const sec = document.getElementById(`dash-sec-${t}`);
-					if (sec) sec.classList.remove('d-none');
-				});
-			} else {
-				allTabs.forEach(t => {
-					const sec = document.getElementById(`dash-sec-${t}`);
-					if (sec) {
-						if (t === tabName) {
-							sec.classList.remove('d-none');
-							sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-						} else {
-							sec.classList.add('d-none');
-						}
+			allMods.forEach(m => {
+				const sec = document.getElementById(`dash-sec-${m}`);
+				if (sec) {
+					if (m === modName) {
+						sec.classList.remove('d-none');
+						sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					} else {
+						sec.classList.add('d-none');
 					}
-				});
+				}
+			});
+		};
+
+		window.closeDashboardModule = () => {
+			const allMods = ['promo', 'stories', 'tips', 'profile', 'gallery', 'security'];
+			
+			allMods.forEach(m => {
+				const sec = document.getElementById(`dash-sec-${m}`);
+				if (sec) sec.classList.add('d-none');
+			});
+
+			const launcher = document.getElementById('dashLauncherGrid');
+			if (launcher) {
+				launcher.classList.remove('d-none');
+				launcher.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
 		};
 

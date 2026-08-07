@@ -18,7 +18,7 @@ Sitemap: ${baseUrl}/sitemap.xml
 `);
 });
 
-// Dynamic Sitemap.xml for Google Indexing
+// Dynamic Sitemap.xml for High-Priority Google Indexing
 router.get('/sitemap.xml', async (req, res) => {
   try {
     const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
@@ -26,6 +26,11 @@ router.get('/sitemap.xml', async (req, res) => {
 
     const staticPages = [
       '',
+      '/escortssantodomingo',
+      '/escortssantiago',
+      '/escortspuntacana',
+      '/escortstrans',
+      '/escortshombres',
       '/escort-login.html',
       '/escort-register.html',
       '/terms.html',
@@ -35,12 +40,13 @@ router.get('/sitemap.xml', async (req, res) => {
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`;
 
-    // Static URLs
+    // High Priority SEO Landings & Static URLs
     staticPages.forEach(page => {
+      const isSeoLanding = page.startsWith('/escort');
       xml += `  <url>\n`;
       xml += `    <loc>${baseUrl}${page}</loc>\n`;
-      xml += `    <changefreq>daily</changefreq>\n`;
-      xml += `    <priority>${page === '' ? '1.0' : '0.8'}</priority>\n`;
+      xml += `    <changefreq>hourly</changefreq>\n`;
+      xml += `    <priority>${page === '' || isSeoLanding ? '1.0' : '0.8'}</priority>\n`;
       xml += `  </url>\n`;
     });
 

@@ -9,6 +9,7 @@ import escortRoutes from './routes/escortRoutes.js';
 import publicRoutes from './routes/publicRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import seoRoutes from './routes/seoRoutes.js';
+import seoPages from './routes/seoPages.js';
 import { seedInitialData } from './seed.js';
 
 dotenv.config();
@@ -28,8 +29,9 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Mount SEO Routes (Robots.txt & Sitemap.xml)
+// Mount SEO Routes (Robots.txt & Sitemap.xml & Aggressive Landings)
 app.use('/', seoRoutes);
+app.use('/', seoPages);
 
 // Mount API Routes
 app.use('/api/auth', authRoutes);

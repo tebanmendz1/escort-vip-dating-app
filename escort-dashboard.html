@@ -191,7 +191,29 @@
 			font-weight: 700;
 			cursor: pointer;
 			z-index: 20;
-			box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+		/* Mobile Native Segmented Payment Switcher */
+		.mobile-pay-switcher {
+			display: flex;
+			background: #18192B;
+			padding: 4px;
+			border-radius: 30px;
+			border: 1px solid rgba(255, 42, 122, 0.3);
+		}
+		.mobile-pay-btn {
+			flex: 1;
+			border: none;
+			background: transparent;
+			color: #CBD5E1;
+			font-weight: 700;
+			font-size: 13px;
+			padding: 10px 12px;
+			border-radius: 25px;
+			transition: all 0.25s ease;
+		}
+		.mobile-pay-btn.active {
+			background: #FF2A7A !important;
+			color: #FFFFFF !important;
+			box-shadow: 0 4px 15px rgba(255, 42, 122, 0.4);
 		}
 	</style>
 </head>
@@ -335,67 +357,64 @@
 								<small id="hybridPlanPriceUsd" class="text-white-50 font-12">aprox. $0.00 USD</small>
 							</div>
 
-							<!-- Pestañas de Métodos de Pago Híbridos -->
-							<ul class="nav nav-pills nav-justified mb-4 p-1 rounded-pill" style="background: #1D1E30;">
-								<li class="nav-item">
-									<button class="nav-link active font-13 font-w700 rounded-pill py-2" id="tab-lbtr" data-bs-toggle="pill" data-bs-target="#method-lbtr" type="button">
-										🇩🇴 Pago al Instante (RD$)
-									</button>
-								</li>
-								<li class="nav-item">
-									<button class="nav-link font-13 font-w700 rounded-pill py-2" id="tab-card-crypto" data-bs-toggle="pill" data-bs-target="#method-card-crypto" type="button">
-										💳 Tarjeta / USDT Cripto
-									</button>
-								</li>
-							</ul>
+							<!-- Selector de Pago Móvil Nativo (Alto Contraste) -->
+							<div class="mobile-pay-switcher mb-4">
+								<button type="button" id="btnPayLbtr" class="mobile-pay-btn active" onclick="switchMobilePayTab('lbtr')">
+									🇩🇴 Banco RD$ (LBTR)
+								</button>
+								<button type="button" id="btnPayCard" class="mobile-pay-btn" onclick="switchMobilePayTab('card')">
+									💳 Tarjeta / Cripto
+								</button>
+							</div>
 
-							<div class="tab-content" id="paymentTabContent">
-								
-								<!-- Método 1: Transferencia al Instante RD$ (Popular, BHD, Banreservas) -->
-								<div class="tab-pane fade show active" id="method-lbtr">
-									<div class="p-3 bg-dark rounded-4 mb-3" style="border: 1px solid rgba(255,255,255,0.1);">
-										<div class="d-flex align-items-center justify-content-between mb-2">
-											<span class="font-w700 text-white font-13">Cuentas Bancarias Dominicanas</span>
-											<span class="badge bg-success font-11">LBTR 24/7 Inmediato</span>
-										</div>
-										<p class="text-white-50 font-12 mb-3">Haz tu transferencia por **Pago al Instante (LBTR)** a cualquiera de estas cuentas personales sin pagar comisiones extra:</p>
-
-										<div class="row g-2 font-13 text-white mb-3">
-											<div class="col-12 p-2 rounded" style="background: rgba(255,255,255,0.05);">
-												🏦 <strong>Banco Popular Dominicano:</strong> Cuenta Ahorros <code>829-500-1234</code>
-											</div>
-											<div class="col-12 p-2 rounded" style="background: rgba(255,255,255,0.05);">
-												🏦 <strong>Banreservas:</strong> Cuenta Ahorros <code>960-400-5678</code>
-											</div>
-											<div class="col-12 p-2 rounded" style="background: rgba(255,255,255,0.05);">
-												🏦 <strong>Banco BHD:</strong> Cuenta Ahorros <code>102-300-9101</code>
-											</div>
-										</div>
-
-										<div class="p-2 bg-secondary bg-opacity-25 rounded text-center mb-3">
-											<small class="text-white-50 font-11 d-block">Código Único de Referencia:</small>
-											<strong id="uniqueRefCode" class="font-18 text-warning font-mono">VIP-8492</strong>
-										</div>
-
-										<button id="btnConfirmLbtrWhatsapp" class="btn btn-success w-100 py-3 font-w700 rounded-pill d-flex align-items-center justify-content-center gap-2 font-15">
-											<i class="fa-brands fa-whatsapp font-20"></i> Enviar Comprobante y Activar por WhatsApp
-										</button>
+							<!-- Vista 1: Transferencia al Instante RD$ (Popular, BHD, Banreservas) -->
+							<div id="viewPayLbtr">
+								<div class="p-3 bg-dark rounded-4 mb-3" style="border: 1px solid rgba(255,255,255,0.1);">
+									<div class="d-flex align-items-center justify-content-between mb-2">
+										<span class="font-w700 text-white font-13">Cuentas Bancarias Dominicanas</span>
+										<span class="badge bg-success font-11">LBTR 24/7 Inmediato</span>
 									</div>
-								</div>
+									<p class="text-white-50 font-12 mb-3">Haz tu transferencia por **Pago al Instante (LBTR)** a cualquiera de estas cuentas personales sin pagar comisiones extra:</p>
 
-								<!-- Método 2: Tarjeta / USDT Cripto sin Registro -->
-								<div class="tab-pane fade" id="method-card-crypto">
-									<div class="p-3 bg-dark rounded-4 mb-3 text-center" style="border: 1px solid rgba(255,255,255,0.1);">
-										<h6 class="font-w700 text-white mb-1">Pago Directo sin Registro</h6>
-										<p class="text-white-50 font-12 mb-3">Acepta **Tarjeta de Crédito/Débito (Visa / Mastercard)** y **USDT Cripto** de forma privada sin requerir empresa constituida.</p>
-
-										<div id="paypalButtonContainer" class="mb-3"></div>
-
-										<a id="cryptoPaymentBtn" href="#" target="_blank" class="btn btn-outline-info w-100 py-2 rounded-pill font-w600 font-13 mb-2">
-											🪙 Pagar con USDT (TRC20 / BEP20) o Cripto
-										</a>
+									<div class="row g-2 font-13 text-white mb-3">
+										<div class="col-12 p-2 rounded" style="background: rgba(255,255,255,0.05);">
+											🏦 <strong>Banco Popular Dominicano:</strong><br>
+											Cuenta Ahorros: <code>829-500-1234</code>
+										</div>
+										<div class="col-12 p-2 rounded" style="background: rgba(255,255,255,0.05);">
+											🏦 <strong>Banreservas:</strong><br>
+											Cuenta Ahorros: <code>960-400-5678</code>
+										</div>
+										<div class="col-12 p-2 rounded" style="background: rgba(255,255,255,0.05);">
+											🏦 <strong>Banco BHD:</strong><br>
+											Cuenta Ahorros: <code>102-300-9101</code>
+										</div>
 									</div>
+
+									<div class="p-2 bg-secondary bg-opacity-25 rounded text-center mb-3">
+										<small class="text-white-50 font-11 d-block">Código Único de Referencia:</small>
+										<strong id="uniqueRefCode" class="font-18 text-warning font-mono">VIP-8492</strong>
+									</div>
+
+									<button id="btnConfirmLbtrWhatsapp" class="btn btn-success w-100 py-3 font-w700 rounded-pill d-flex align-items-center justify-content-center gap-2 font-15">
+										<i class="fa-brands fa-whatsapp font-20"></i> Enviar Comprobante por WhatsApp
+									</button>
 								</div>
+							</div>
+
+							<!-- Vista 2: Tarjeta / USDT Cripto sin Registro -->
+							<div id="viewPayCard" class="d-none">
+								<div class="p-3 bg-dark rounded-4 mb-3 text-center" style="border: 1px solid rgba(255,255,255,0.1);">
+									<h6 class="font-w700 text-white mb-1">Pago Directo con Tarjeta / Cripto</h6>
+									<p class="text-white-50 font-12 mb-3">Paga directamente con **Tarjeta de Crédito o Débito** o en **USDT Cripto** de forma privada sin requerir empresa constituida.</p>
+
+									<div id="paypalButtonContainer" class="mb-3"></div>
+
+									<a id="cryptoPaymentBtn" href="#" target="_blank" class="btn btn-outline-info w-100 py-3 rounded-pill font-w700 font-14 mb-2">
+										🪙 Pagar con USDT (TRC20 / BEP20) o Cripto
+									</a>
+								</div>
+							</div>
 
 							</div>
 
@@ -936,7 +955,27 @@
 			}
 		}
 
+		window.switchMobilePayTab = (tab) => {
+			const btnLbtr = document.getElementById('btnPayLbtr');
+			const btnCard = document.getElementById('btnPayCard');
+			const viewLbtr = document.getElementById('viewPayLbtr');
+			const viewCard = document.getElementById('viewPayCard');
+
+			if (tab === 'lbtr') {
+				btnLbtr.classList.add('active');
+				btnCard.classList.remove('active');
+				viewLbtr.classList.remove('d-none');
+				viewCard.classList.add('d-none');
+			} else {
+				btnCard.classList.add('active');
+				btnLbtr.classList.remove('active');
+				viewCard.classList.remove('d-none');
+				viewLbtr.classList.add('d-none');
+			}
+		};
+
 		loadDashboard();
 	</script>
+	<script src="assets/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

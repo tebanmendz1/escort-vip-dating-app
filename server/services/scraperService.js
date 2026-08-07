@@ -7,38 +7,47 @@ import sharp from 'sharp';
 import { db } from '../db.js';
 
 /**
- * Genera un Watermark SVG elegante con la marca oficial de ESCORTSVIP.DO
+ * Genera un Watermark SVG colocado estratégicamente en el CENTRO de la imagen (donde Skokka estampa su logo)
  */
 function createWatermarkSvg(width, height) {
-  const fontSize = Math.max(14, Math.floor(width * 0.042));
-  const svgWidth = Math.floor(width * 0.65);
-  const svgHeight = Math.floor(fontSize * 2.4);
-  const xPos = Math.max(10, width - svgWidth - 15);
-  const yPos = Math.max(10, height - svgHeight - 15);
+  const fontSize = Math.max(16, Math.floor(width * 0.048));
+  const svgWidth = Math.floor(width * 0.72);
+  const svgHeight = Math.floor(fontSize * 2.6);
+
+  // Posición CENTRAL exacta donde Skokka coloca su logo
+  const centerX = Math.floor((width - svgWidth) / 2);
+  const centerY = Math.floor((height - svgHeight) / 2);
 
   return `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.8"/>
+        </filter>
+      </defs>
       <style>
         .watermark-pill {
-          fill: rgba(15, 15, 25, 0.88);
-          stroke: rgba(255, 42, 122, 0.6);
-          stroke-width: 1.5px;
-          rx: 16px;
-          ry: 16px;
+          fill: rgba(12, 12, 20, 0.92);
+          stroke: #FF2A7A;
+          stroke-width: 2.5px;
+          rx: 20px;
+          ry: 20px;
+          filter: url(#shadow);
         }
         .watermark-text {
           fill: #FFFFFF;
-          font-family: 'Outfit', Arial, sans-serif;
+          font-family: Arial, sans-serif;
           font-size: ${fontSize}px;
           font-weight: 900;
-          letter-spacing: 1.5px;
+          letter-spacing: 2px;
         }
         .watermark-sub {
           fill: #FF2A7A;
           font-weight: 900;
         }
       </style>
-      <g transform="translate(${xPos}, ${yPos})">
+      <!-- Badge Central que Tapará 100% el Logo de Skokka -->
+      <g transform="translate(${centerX}, ${centerY})">
         <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" class="watermark-pill"/>
         <text x="${svgWidth / 2}" y="${svgHeight / 2 + fontSize * 0.35}" text-anchor="middle" class="watermark-text">
           <tspan class="watermark-sub">🔥 </tspan>ESCORTSVIP.DO
@@ -49,7 +58,7 @@ function createWatermarkSvg(width, height) {
 }
 
 /**
- * Descarga y estampa nuestra marca de agua oficial (ESCORTSVIP.DO) recortando cualquier marca previa
+ * Descarga y estampa nuestra marca de agua oficial (ESCORTSVIP.DO) tapando el logo central de Skokka
  */
 async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
   try {
@@ -68,10 +77,7 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
     const metadata = await sharp(buffer).metadata();
     const { width, height } = metadata;
 
-    if (width && height && height > 200) {
-      // Recortar un 4% inferior para reducir marca de agua previa
-      const cropHeight = Math.floor(height * 0.96);
-      
+    if (width && height && height > 150) {
       const dirPath = path.join(process.cwd(), 'server', 'uploads', 'scraped');
       if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
@@ -80,12 +86,11 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
       const filename = `escort_${escortId}_${index + 1}_${Date.now()}.jpg`;
       const filePath = path.join(dirPath, filename);
 
-      const watermarkSvg = createWatermarkSvg(width, cropHeight);
+      const watermarkSvg = createWatermarkSvg(width, height);
 
       await sharp(buffer)
-        .extract({ left: 0, top: 0, width, height: cropHeight })
         .composite([{ input: Buffer.from(watermarkSvg), top: 0, left: 0 }])
-        .jpeg({ quality: 92 })
+        .jpeg({ quality: 93 })
         .toFile(filePath);
 
       return `uploads/scraped/${filename}`;
@@ -93,7 +98,7 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
 
     return imageUrl;
   } catch (err) {
-    console.error(`[Scraper] Error al estampar marca de agua ESCORTSVIP.DO en imagen ${index + 1}:`, err.message);
+    console.error(`[Scraper] Error al estampar marca de agua central ESCORTSVIP.DO en imagen ${index + 1}:`, err.message);
     return imageUrl;
   }
 }
@@ -161,7 +166,7 @@ function extractSkokkaPhotos(html, targetUrl) {
 }
 
 /**
- * Función Principal para parsear HTML de Skokka e Importar Perfil con Secciones Organizadas y Marca de Agua ESCORTSVIP.DO
+ * Función Principal para parsear HTML de Skokka e Importar Perfil con Secciones Organizadas y Marca de Agua ESCORTSVIP.DO Central
  */
 export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.skokka.com', customCity = 'Santo Domingo', customGender = 'FEMALE') {
   const $ = cheerio.load(html);
@@ -252,12 +257,10 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     nationality = 'Colombiana';
   }
 
-  // Formatear servicios
   const servicesFormatted = extractedServices.length > 0
     ? extractedServices.join(', ')
     : 'Acompañante VIP, Trato de Novios, Cenas, Eventos';
 
-  // Mantener biografía LIMPIA y adjuntar metadatos de forma estructurada con separador especial
   const extraDetails = [];
   if (aboutYou.length > 0) extraDetails.push(`✨ Características: ${aboutYou.join(', ')}`);
   if (attentionTo.length > 0) extraDetails.push(`👥 Atiendo a: ${attentionTo.join(', ')}`);
@@ -268,7 +271,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     ? `${cleanBio}\n\n${extraDetails.join('\n')}`
     : cleanBio;
 
-  // 8. Extraer Fotos y Estampar Marca de Agua ESCORTSVIP.DO
+  // 8. Extraer Fotos y Estampar Marca de Agua Central ESCORTSVIP.DO (Tapando a Skokka)
   const rawPhotos = extractSkokkaPhotos(html, targetUrl);
 
   const escortId = `scraped_${Date.now()}`;
@@ -310,7 +313,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     await db.addPhoto(escort.id, pUrl, pUrl === avatarUrl);
   }
 
-  console.log(`[Scraper] ✅ Perfil importado con éxito: ${name} (Servicios: ${extractedServices.length}, Marca de agua ESCORTSVIP.DO estampada en ${watermarkedPhotos.length} fotos).`);
+  console.log(`[Scraper] ✅ Perfil importado con éxito: ${name} (Marca de agua central ESCORTSVIP.DO estampada cubriendo Skokka en ${watermarkedPhotos.length} fotos).`);
   return {
     success: true,
     escort,

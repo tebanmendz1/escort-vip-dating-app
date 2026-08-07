@@ -4,9 +4,96 @@ import bcrypt from 'bcryptjs';
 import { db } from '../db.js';
 
 /**
- * Función Auxiliar para parsear HTML de cualquier perfil (Skokka, etc.)
+ * Extractor Multi-Paso de Fotos para Skokka y Sitios de Escorts
  */
-export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://escortsvip.do', customCity = 'Santo Domingo', customGender = 'FEMALE') {
+function extractAllPhotosFromHtml(html, targetUrl = 'https://do.skokka.com') {
+  const $ = cheerio.load(html);
+  const rawPhotos = [];
+
+  function addCandidate(url) {
+    if (!url || typeof url !== 'string') return;
+    let clean = url.trim();
+
+    // Normalizar URLs relativas
+    if (clean.startsWith('//')) {
+      clean = `https:${clean}`;
+    } else if (clean.startsWith('/')) {
+      try {
+        const u = new URL(targetUrl);
+        clean = `${u.origin}${clean}`;
+      } catch (e) {
+        clean = `https://do.skokka.com${clean}`;
+      }
+    }
+
+    // Ignorar iconos, logos o avatares por defecto de plantillas
+    const lower = clean.toLowerCase();
+    if (
+      lower.includes('logo') ||
+      lower.includes('icon') ||
+      lower.includes('favicon') ||
+      lower.includes('svg') ||
+      lower.includes('blank.gif') ||
+      lower.includes('loader') ||
+      lower.includes('avatar-default')
+    ) {
+      return;
+    }
+
+    if (clean.startsWith('http://') || clean.startsWith('https://')) {
+      if (!rawPhotos.includes(clean)) {
+        rawPhotos.push(clean);
+      }
+    }
+  }
+
+  // 1. Meta Tags (og:image, twitter:image)
+  $('meta[property="og:image"], meta[name="og:image"], meta[name="twitter:image"], link[rel="image_src"]').each((i, el) => {
+    addCandidate($(el).attr('content') || $(el).attr('href'));
+  });
+
+  // 2. Elementos <img>, <source>, <a> (Cheerio DOM Scan)
+  $('img, source, a, div[data-src], div[data-image]').each((i, el) => {
+    const $el = $(el);
+    addCandidate($el.attr('src'));
+    addCandidate($el.attr('data-src'));
+    addCandidate($el.attr('data-original'));
+    addCandidate($el.attr('data-lazy'));
+    addCandidate($el.attr('data-big'));
+    addCandidate($el.attr('data-zoom-image'));
+    addCandidate($el.attr('href'));
+
+    // Parsear srcset
+    const srcset = $el.attr('srcset') || $el.attr('data-srcset');
+    if (srcset) {
+      const parts = srcset.split(',');
+      parts.forEach(p => {
+        const candidate = p.trim().split(' ')[0];
+        addCandidate(candidate);
+      });
+    }
+  });
+
+  // 3. Regex Scan directo en todo el texto HTML
+  const urlRegex = /(https?:\/\/[^\s"'<>\(\)]+\.(?:jpg|jpeg|png|webp)(?:\?[^\s"'<>]*)?)/gi;
+  let match;
+  while ((match = urlRegex.exec(html)) !== null) {
+    addCandidate(match[1]);
+  }
+
+  // Regex para CDN de Skokka / Clasificados
+  const skokkaImgRegex = /(https?:\/\/[^\s"'<>]*(?:skokka|cdn|images|media)[^\s"'<>]*(?:photos|anuncios|uploads|images)[^\s"'<>]*)/gi;
+  while ((match = skokkaImgRegex.exec(html)) !== null) {
+    addCandidate(match[1]);
+  }
+
+  return rawPhotos.slice(0, 10);
+}
+
+/**
+ * Función Principal para parsear HTML e importar Escort con Fotos
+ */
+export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.skokka.com', customCity = 'Santo Domingo', customGender = 'FEMALE') {
   const $ = cheerio.load(html);
 
   // Extraer nombre del perfil
@@ -26,26 +113,8 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://esc
   // Extraer biografía o descripción
   let bio = $('.listing-description, .description, p').text().trim().substring(0, 300) || `Hola, soy ${name}. Disponible para servicios exclusivos en ${customCity}.`;
 
-  // Extraer fotos de alta resolución
-  const photos = [];
-  $('img').each((i, el) => {
-    const src = $(el).attr('src') || $(el).attr('data-src') || $(el).attr('data-lazy');
-    if (src && (src.endsWith('.jpg') || src.endsWith('.png') || src.endsWith('.jpeg') || src.endsWith('.webp') || src.includes('skokka') || src.includes('/uploads/'))) {
-      let fullUrl = src;
-      if (src.startsWith('//')) fullUrl = `https:${src}`;
-      else if (src.startsWith('/')) {
-        try {
-          const urlObj = new URL(targetUrl);
-          fullUrl = `${urlObj.origin}${src}`;
-        } catch (e) {
-          fullUrl = `https://do.skokka.com${src}`;
-        }
-      }
-      if (!photos.includes(fullUrl) && photos.length < 8 && !fullUrl.includes('logo') && !fullUrl.includes('icon')) {
-        photos.push(fullUrl);
-      }
-    }
-  });
+  // Extraer fotos
+  const photos = extractAllPhotosFromHtml(html, targetUrl);
 
   const avatarUrl = photos.length > 0 ? photos[0] : 'assets/images/escorts/female1.jpg';
   const defaultPassword = await bcrypt.hash('123456', 10);
@@ -78,11 +147,12 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://esc
     await db.addPhoto(escort.id, pUrl, pUrl === avatarUrl);
   }
 
-  console.log(`[Scraper] ✅ Perfil parseado e importado: ${name} (${escort.id}) con ${photos.length} fotos.`);
+  console.log(`[Scraper] ✅ Perfil parseado e importado: ${name} (${escort.id}) con ${photos.length} fotos extraídas.`);
   return {
     success: true,
     escort,
-    importedPhotosCount: photos.length
+    importedPhotosCount: photos.length,
+    photos
   };
 }
 

@@ -551,7 +551,16 @@
 					headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
 					body: JSON.stringify({ html, city, gender })
 				});
-				const data = await res.json();
+
+				const contentType = res.headers.get('content-type') || '';
+				let data;
+				if (contentType.includes('application/json')) {
+					data = await res.json();
+				} else {
+					const text = await res.text();
+					throw new Error(`Respuesta no válida del servidor (HTTP ${res.status}). El HTML pegado puede ser demasiado grande o la sesión de Admin expiró.`);
+				}
+
 				if (!res.ok) throw new Error(data.error || 'Error al procesar HTML');
 
 				alertBox.textContent = `¡Éxito Bypass! Perfil "${data.escort.name}" extraído e importado correctamente con ${data.importedPhotosCount} fotos.`;

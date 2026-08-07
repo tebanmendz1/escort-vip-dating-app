@@ -146,18 +146,31 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
 function extractSkokkaPhotos(html, targetUrl) {
   const photos = [];
 
-  function pushPhoto(url) {
-    if (!url || typeof url !== 'string') return;
-    let clean = url.replace(/\\/g, '').replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
+  function pushPhoto(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return;
+    
+    // 1. Desinfectar comillas, barras invertidas y entidades XML/HTML al inicio y final
+    let clean = rawUrl
+      .replace(/\\/g, '')
+      .replace(/["']/g, '')
+      .replace(/&#x27;/g, '')
+      .replace(/&quot;/g, '')
+      .trim();
 
+    // 2. Normalizar URLs relativas de Skokka (/image/post/...)
     if (clean.startsWith('//')) clean = `https:${clean}`;
-    if (clean.startsWith('/image/')) clean = `https://do.skokka.com${clean}`;
+    if (clean.startsWith('/image/') || clean.startsWith('/')) {
+      clean = `https://do.skokka.com${clean.startsWith('/') ? '' : '/'}${clean}`;
+    }
 
-    const urlMatch = clean.match(/(https?:\/\/[^\s"'<>]+(?:\.jpg|\.png|\.jpeg|\.webp)[^\s"'<>]*)/i) || clean.match(/(https?:\/\/[^\s"'<>]*skokka[^\s"'<>]*\/image\/post\/[^\s"'<>]*)/i);
+    // 3. Extraer patrón de URL de imagen limpia
+    const urlMatch = clean.match(/(https?:\/\/[^\s"'<>]+(?:\.jpg|\.png|\.jpeg|\.webp)[^\s"'<>]*)/i) 
+                  || clean.match(/(https?:\/\/[^\s"'<>]*skokka[^\s"'<>]*\/image\/post\/[^\s"'<>]*)/i);
     if (urlMatch) {
       clean = urlMatch[1];
     }
 
+    // Filtrar recursos que no son fotos del catálogo (logos, avatars, icons)
     const lower = clean.toLowerCase();
     if (
       lower.includes('logo') ||
@@ -212,21 +225,27 @@ function extractSkokkaPhotos(html, targetUrl) {
   const vueMatches = decodedHtml.match(/(\[.*?\])/gs);
   if (vueMatches) {
     vueMatches.forEach(block => {
-      if (block.includes('http') && (block.includes('image') || block.includes('jpg') || block.includes('png') || block.includes('webp'))) {
-        const imgs = block.match(/https?:\/\/[^\s"'<>]+(?:\.jpg|\.png|\.jpeg|\.webp)[^\s"'<>]*/gi);
+      if (block.includes('/image/') || block.includes('http') || block.includes('jpg') || block.includes('png') || block.includes('webp')) {
+        const imgs = block.match(/(?:https?:\/\/[^\s"'<>]+|\/image\/post\/[^\s"'<>]+)(?:\.jpg|\.png|\.jpeg|\.webp|[^\s"'<>]*)/gi);
         if (imgs) imgs.forEach(img => pushPhoto(img));
       }
     });
   }
 
-  // 5. Patrón universal de imágenes CDN Skokka
+  // 5. Escaneo directo de todas las referencias de ruta relativas /image/post/ en el HTML
+  const rawPostMatches = decodedHtml.match(/(\/image\/post\/[^\s"'<>\)\\]+)/gi);
+  if (rawPostMatches) {
+    rawPostMatches.forEach(m => pushPhoto(m));
+  }
+
+  // 6. Patrón universal de imágenes CDN Skokka
   const skokkaPattern = /(https?:\/\/[^\s"'<>]*(?:skokka|cdn|image|post)[^\s"'<>]*\/image\/post\/[^\s"'<>\)\\]+)/gi;
   let match;
   while ((match = skokkaPattern.exec(decodedHtml)) !== null) {
     pushPhoto(match[1]);
   }
 
-  // 6. Patrón genérico de imágenes de alta resolución
+  // 7. Patrón genérico de imágenes de alta resolución
   const genericPhotoPattern = /(https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp))/gi;
   while ((match = genericPhotoPattern.exec(decodedHtml)) !== null) {
     pushPhoto(match[1]);

@@ -174,24 +174,48 @@
 
 			<!-- Section 2: Config ADS & Anti-Adblock -->
 			<div id="sectionConfig" class="admin-card d-none">
-				<h5 class="font-w800 text-white mb-3">Configuración de Anuncios y Anti-Adblock</h5>
+				<h5 class="font-w800 text-white mb-2"><i class="fa-solid fa-rectangle-ad text-primary me-2"></i> Configuración de Monetización y Anuncios</h5>
+				<p class="text-white-50 font-13 mb-4">Controla qué tipo de anuncios se muestran a tus visitantes y limita la frecuencia de aparición para no saturar al usuario.</p>
+				
 				<form id="configForm">
-					<div class="form-check form-switch mb-3">
+					<div class="form-check form-switch mb-4">
 						<input class="form-check-input" type="checkbox" id="adsEnabled">
-						<label class="form-check-label text-white font-w600" for="adsEnabled">Activar Banners de Anuncios en el Sitio</label>
+						<label class="form-check-label text-white font-w700" for="adsEnabled">🟢 Activar Red de Anuncios en el Sitio (Adcash / Banner HTML)</label>
 					</div>
 
-					<div class="mb-3">
-						<label class="form-label">Código HTML del Banner de Anuncio</label>
-						<textarea id="bannerCode" class="form-control" rows="4" placeholder="Pega tu código publicitario de Google AdSense o Banner HTML aquí..."></textarea>
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label class="form-label font-w600">Frecuencia de Aparición por Visitante (Cooldown) *</label>
+							<select id="adFrequency" class="form-select">
+								<option value="0">⚡ Mostrar en cada interacción (Sin límite)</option>
+								<option value="15" selected>⏱️ Máximo 1 impresión cada 15 minutos</option>
+								<option value="30">⏱️ Máximo 1 impresión cada 30 minutos</option>
+								<option value="60">⏱️ Máximo 1 impresión cada 1 hora</option>
+								<option value="1440">📅 Máximo 1 impresión cada 24 horas (Recomendado)</option>
+							</select>
+							<small class="text-white-50 font-11">Evita que a un mismo usuario se le abran popups o anuncios repetidamente.</small>
+						</div>
+
+						<div class="col-md-6 mb-3">
+							<label class="form-label font-w600">ID de Zona Adcash (ZoneID)</label>
+							<input type="text" id="adcashZoneId" class="form-control font-mono" value="hoj7opxahb" placeholder="hoj7opxahb">
+							<small class="text-white-50 font-11">Identificador de tu zona publicitaria en Adcash.</small>
+						</div>
+					</div>
+
+					<div class="mb-4">
+						<label class="form-label font-w600">Código HTML de Banner Adicional (Opcional)</label>
+						<textarea id="bannerCode" class="form-control font-mono" rows="3" placeholder="Pega código adicional de anuncios AdSense o Banners HTML aquí..."></textarea>
 					</div>
 
 					<div class="form-check form-switch mb-4">
 						<input class="form-check-input" type="checkbox" id="antiAdblock">
-						<label class="form-check-label text-white font-w600" for="antiAdblock">Activar Detector Estricto Anti-Adblock y Brave Shields</label>
+						<label class="form-check-label text-white font-w700" for="antiAdblock">🛡️ Activar Detector Estricto Anti-Adblock y Brave Shields</label>
 					</div>
 
-					<button type="submit" class="btn btn-primary font-w700 rounded-pill px-4" style="background: var(--primary-gradient);">Guardar Configuración</button>
+					<button type="submit" class="btn btn-primary font-w700 rounded-pill px-4 py-3" style="background: var(--primary-gradient);">
+						💾 Guardar Ajustes de Monetización
+					</button>
 				</form>
 			</div>
 
@@ -450,6 +474,8 @@
 				});
 				const config = await res.json();
 				document.getElementById('adsEnabled').checked = config.adsEnabled;
+				document.getElementById('adFrequency').value = config.adFrequency !== undefined ? config.adFrequency : 15;
+				document.getElementById('adcashZoneId').value = config.adcashZoneId || 'hoj7opxahb';
 				document.getElementById('bannerCode').value = config.bannerCode || '';
 				document.getElementById('antiAdblock').checked = config.antiAdblock;
 			} catch (err) {
@@ -460,6 +486,8 @@
 		document.getElementById('configForm').addEventListener('submit', async (e) => {
 			e.preventDefault();
 			const adsEnabled = document.getElementById('adsEnabled').checked;
+			const adFrequency = parseInt(document.getElementById('adFrequency').value);
+			const adcashZoneId = document.getElementById('adcashZoneId').value.trim();
 			const bannerCode = document.getElementById('bannerCode').value;
 			const antiAdblock = document.getElementById('antiAdblock').checked;
 
@@ -467,9 +495,9 @@
 				const res = await fetch('/api/admin/config', {
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
-					body: JSON.stringify({ adsEnabled, bannerCode, antiAdblock })
+					body: JSON.stringify({ adsEnabled, adFrequency, adcashZoneId, bannerCode, antiAdblock })
 				});
-				if (res.ok) alert('Configuración guardada correctamente');
+				if (res.ok) alert('¡Ajustes de monetización guardados con éxito!');
 			} catch (err) {
 				alert(err.message);
 			}

@@ -69,7 +69,8 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
     const { width, height } = metadata;
 
     if (width && height && height > 150) {
-      const dirPath = path.join(process.cwd(), 'server', 'uploads', 'scraped');
+      const uploadsDir = process.env.UPLOADS_DIR || (fs.existsSync('/data/uploads') ? '/data/uploads' : path.join(process.cwd(), 'server', 'uploads'));
+      const dirPath = path.join(uploadsDir, 'scraped');
       if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
       }

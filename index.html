@@ -1,12 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-	<!-- Adcash Network Monetization -->
+	<!-- Adcash Network Monetization & Smart Frequency Control -->
 	<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
 	<script type="text/javascript">
-		aclib.runAutoTag({
-			zoneId: 'hoj7opxahb',
-		});
+		(function() {
+			try {
+				const lastAd = parseInt(localStorage.getItem('citasrd_last_ad_time') || '0');
+				const now = Date.now();
+				// Cooldown de 15 minutos por defecto por usuario para no saturar
+				const cooldownMs = 15 * 60 * 1000;
+				
+				if (now - lastAd >= cooldownMs) {
+					localStorage.setItem('citasrd_last_ad_time', now.toString());
+					if (window.aclib && window.aclib.runAutoTag) {
+						aclib.runAutoTag({ zoneId: 'hoj7opxahb' });
+					}
+				}
+			} catch(e) {
+				if (window.aclib && window.aclib.runAutoTag) {
+					aclib.runAutoTag({ zoneId: 'hoj7opxahb' });
+				}
+			}
+		})();
 	</script>
 
 	<!-- Title SEO -->

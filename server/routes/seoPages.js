@@ -120,6 +120,14 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
       const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
+	<!-- Adcash Network Monetization -->
+	<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
+	<script type="text/javascript">
+		aclib.runAutoTag({
+			zoneId: 'hoj7opxahb',
+		});
+	</script>
+
 	<title>${config.title}</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">

@@ -1354,6 +1354,51 @@
 				const whatsappMsg = encodeURIComponent(`Hola ${escort.name}, vi tu perfil en Escort VIP. Quisiera consultar tus servicios.`);
 				const whatsappLink = `https://wa.me/${whatsappClean}?text=${whatsappMsg}`;
 
+				let rawBio = escort.bio || 'Sin descripción disponible.';
+				let cleanBioText = rawBio;
+				let featuresTags = [];
+				let attentionTags = [];
+				let locationTags = [];
+				let paymentTags = [];
+
+				if (rawBio.includes('✨ Características:') || rawBio.includes('👥 Atiendo a:')) {
+					const parts = rawBio.split(/\n\n|\r\n\r\n/);
+					cleanBioText = parts[0].trim();
+					
+					const featMatch = rawBio.match(/✨ Características:(.*?)(?=\n|👥|📍|💳|$)/);
+					if (featMatch) featuresTags = featMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+
+					const attMatch = rawBio.match(/👥 Atiendo a:(.*?)(?=\n|📍|💳|$)/);
+					if (attMatch) attentionTags = attMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+
+					const locMatch = rawBio.match(/📍 Lugar de encuentro:(.*?)(?=\n|💳|$)/);
+					if (locMatch) locationTags = locMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+
+					const payMatch = rawBio.match(/💳 Métodos de pago:(.*?)(?=\n|$)/);
+					if (payMatch) paymentTags = payMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+				}
+
+				const servicesList = (escort.services || 'Acompañante VIP').split(',').map(s => s.trim()).filter(Boolean);
+				const servicesBadges = servicesList.map(s => `
+					<span class="badge rounded-pill me-1 mb-2 px-3 py-2 font-12 font-w600" style="background: rgba(255, 42, 122, 0.18); color: #FF50A2; border: 1px solid rgba(255, 42, 122, 0.3);">${s}</span>
+				`).join('');
+
+				const attentionBadges = attentionTags.map(s => `
+					<span class="badge rounded-pill bg-secondary bg-opacity-50 text-white me-1 mb-2 px-3 py-2 font-12"><i class="fa-solid fa-user-group me-1 text-primary"></i> ${s}</span>
+				`).join('');
+
+				const locationBadges = locationTags.map(s => `
+					<span class="badge rounded-pill bg-secondary bg-opacity-50 text-white me-1 mb-2 px-3 py-2 font-12"><i class="fa-solid fa-location-dot me-1 text-warning"></i> ${s}</span>
+				`).join('');
+
+				const paymentBadges = paymentTags.map(s => `
+					<span class="badge rounded-pill bg-success bg-opacity-25 text-success border border-success border-opacity-50 me-1 mb-2 px-3 py-2 font-12"><i class="fa-solid fa-money-bill-wave me-1"></i> ${s}</span>
+				`).join('');
+
+				const featuresBadges = featuresTags.map(s => `
+					<span class="badge rounded-pill bg-info bg-opacity-25 text-info border border-info border-opacity-50 me-1 mb-2 px-3 py-2 font-12"><i class="fa-solid fa-sparkles me-1"></i> ${s}</span>
+				`).join('');
+
 				document.getElementById('modalEscortBody').innerHTML = `
 					<div class="text-center mb-3">
 						<div style="position: relative; display: inline-block;">
@@ -1382,18 +1427,46 @@
 					</div>
 
 					<div class="mb-3">
-						<h6 class="font-w700 text-white">Sobre Mí</h6>
-						<p class="text-white-50 font-14 mb-0">${escort.bio || 'Sin descripción disponible.'}</p>
+						<h6 class="font-w700 text-white"><i class="fa-solid fa-user me-2 text-primary"></i>Sobre Mí</h6>
+						<p class="text-white-50 font-14 mb-0" style="line-height: 1.6;">${cleanBioText}</p>
 					</div>
 
+					${featuresBadges ? `
+						<div class="mb-3">
+							<h6 class="font-w700 text-white mb-2"><i class="fa-solid fa-sparkles me-2 text-info"></i>Características</h6>
+							<div class="d-flex flex-wrap">${featuresBadges}</div>
+						</div>
+					` : ''}
+
 					<div class="mb-3">
-						<h6 class="font-w700 text-white">Servicios Ofrecidos</h6>
-						<p class="font-14 text-white bg-secondary bg-opacity-25 p-2 rounded">${escort.services || 'Acompañante VIP'}</p>
+						<h6 class="font-w700 text-white mb-2"><i class="fa-solid fa-heart me-2 text-primary"></i>Servicios Ofrecidos</h6>
+						<div class="d-flex flex-wrap">${servicesBadges}</div>
 					</div>
+
+					${attentionBadges ? `
+						<div class="mb-3">
+							<h6 class="font-w700 text-white mb-2"><i class="fa-solid fa-users me-2 text-primary"></i>A Quién Atiende</h6>
+							<div class="d-flex flex-wrap">${attentionBadges}</div>
+						</div>
+					` : ''}
+
+					${locationBadges ? `
+						<div class="mb-3">
+							<h6 class="font-w700 text-white mb-2"><i class="fa-solid fa-location-dot me-2 text-warning"></i>Lugar de Encuentro</h6>
+							<div class="d-flex flex-wrap">${locationBadges}</div>
+						</div>
+					` : ''}
+
+					${paymentBadges ? `
+						<div class="mb-3">
+							<h6 class="font-w700 text-white mb-2"><i class="fa-solid fa-wallet me-2 text-success"></i>Métodos de Pago</h6>
+							<div class="d-flex flex-wrap">${paymentBadges}</div>
+						</div>
+					` : ''}
 
 					${photosHtml ? `
 						<div class="mb-3">
-							<h6 class="font-w700 text-white mb-2">Galería (Toca para ampliar 🔍)</h6>
+							<h6 class="font-w700 text-white mb-2"><i class="fa-solid fa-images me-2 text-primary"></i>Galería (Toca para ampliar 🔍)</h6>
 							<div class="row g-2">${photosHtml}</div>
 						</div>
 					` : ''}

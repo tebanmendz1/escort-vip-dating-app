@@ -7,9 +7,51 @@ import sharp from 'sharp';
 import { db } from '../db.js';
 
 /**
- * Descarga y remueve la marca de agua inferior de Skokka usando Sharp
+ * Genera un Watermark SVG elegante con la marca oficial de ESCORTSVIP.DO
  */
-async function downloadAndCleanPhoto(imageUrl, escortId, index) {
+function createWatermarkSvg(width, height) {
+  const fontSize = Math.max(14, Math.floor(width * 0.042));
+  const svgWidth = Math.floor(width * 0.65);
+  const svgHeight = Math.floor(fontSize * 2.4);
+  const xPos = Math.max(10, width - svgWidth - 15);
+  const yPos = Math.max(10, height - svgHeight - 15);
+
+  return `
+    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <style>
+        .watermark-pill {
+          fill: rgba(15, 15, 25, 0.88);
+          stroke: rgba(255, 42, 122, 0.6);
+          stroke-width: 1.5px;
+          rx: 16px;
+          ry: 16px;
+        }
+        .watermark-text {
+          fill: #FFFFFF;
+          font-family: 'Outfit', Arial, sans-serif;
+          font-size: ${fontSize}px;
+          font-weight: 900;
+          letter-spacing: 1.5px;
+        }
+        .watermark-sub {
+          fill: #FF2A7A;
+          font-weight: 900;
+        }
+      </style>
+      <g transform="translate(${xPos}, ${yPos})">
+        <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" class="watermark-pill"/>
+        <text x="${svgWidth / 2}" y="${svgHeight / 2 + fontSize * 0.35}" text-anchor="middle" class="watermark-text">
+          <tspan class="watermark-sub">🔥 </tspan>ESCORTSVIP.DO
+        </text>
+      </g>
+    </svg>
+  `;
+}
+
+/**
+ * Descarga y estampa nuestra marca de agua oficial (ESCORTSVIP.DO) recortando cualquier marca previa
+ */
+async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
   try {
     const res = await fetch(imageUrl, {
       headers: {
@@ -27,8 +69,8 @@ async function downloadAndCleanPhoto(imageUrl, escortId, index) {
     const { width, height } = metadata;
 
     if (width && height && height > 200) {
-      // Recortar el 6.5% inferior donde Skokka estampa su marca de agua
-      const cropHeight = Math.floor(height * 0.935);
+      // Recortar un 4% inferior para reducir marca de agua previa
+      const cropHeight = Math.floor(height * 0.96);
       
       const dirPath = path.join(process.cwd(), 'server', 'uploads', 'scraped');
       if (!fs.existsSync(dirPath)) {
@@ -38,8 +80,11 @@ async function downloadAndCleanPhoto(imageUrl, escortId, index) {
       const filename = `escort_${escortId}_${index + 1}_${Date.now()}.jpg`;
       const filePath = path.join(dirPath, filename);
 
+      const watermarkSvg = createWatermarkSvg(width, cropHeight);
+
       await sharp(buffer)
         .extract({ left: 0, top: 0, width, height: cropHeight })
+        .composite([{ input: Buffer.from(watermarkSvg), top: 0, left: 0 }])
         .jpeg({ quality: 92 })
         .toFile(filePath);
 
@@ -48,7 +93,7 @@ async function downloadAndCleanPhoto(imageUrl, escortId, index) {
 
     return imageUrl;
   } catch (err) {
-    console.error(`[Scraper] Error limpiando marca de agua en imagen ${index + 1}:`, err.message);
+    console.error(`[Scraper] Error al estampar marca de agua ESCORTSVIP.DO en imagen ${index + 1}:`, err.message);
     return imageUrl;
   }
 }
@@ -116,7 +161,7 @@ function extractSkokkaPhotos(html, targetUrl) {
 }
 
 /**
- * Función Principal para parsear HTML de Skokka e Importar Perfil con Metadatos Completos y Remover Marca de Agua
+ * Función Principal para parsear HTML de Skokka e Importar Perfil con Secciones Organizadas y Marca de Agua ESCORTSVIP.DO
  */
 export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.skokka.com', customCity = 'Santo Domingo', customGender = 'FEMALE') {
   const $ = cheerio.load(html);
@@ -160,14 +205,14 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   const cityFromAd = $('[data-testid="ad-detail-city"]').text().trim().replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').trim();
   const city = cityFromAd || customCity || 'Santiago';
 
-  // 5. Extraer Biografía / Descripción
-  let bio = $('[data-testid="ad-detail-description"]').text().trim();
-  if (!bio) {
-    bio = $('.listing-description, .description, p').text().trim();
+  // 5. Extraer Biografía Limpia
+  let rawBio = $('[data-testid="ad-detail-description"]').text().trim();
+  if (!rawBio) {
+    rawBio = $('.listing-description, .description, p').text().trim();
   }
-  bio = bio.substring(0, 400) || `Hola amor, recién llegada. Escríbeme y disfruta conmigo en ${city}.`;
+  let cleanBio = rawBio.substring(0, 400) || `Hola amor, recién llegada. Escríbeme y disfruta conmigo una noche inolvidable en ${city}.`;
 
-  // 6. Extraer Secciones Estructuradas (:hierarchy JSON: Servicios, A quien atiende, Lugar de encuentro, Métodos de Pago)
+  // 6. Extraer Secciones Estructuradas (:hierarchy JSON)
   let extractedServices = [];
   let attentionTo = [];
   let placeOfService = [];
@@ -198,7 +243,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     }
   }
 
-  // 7. Extraer Nacionalidad si existe en tags
+  // 7. Extraer Nacionalidad
   let nationality = 'Dominicana';
   const natTag = aboutYou.find(t => t.includes('Colombiana') || t.includes('Venezolana') || t.includes('Dominicana'));
   if (natTag) {
@@ -212,32 +257,31 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     ? extractedServices.join(', ')
     : 'Acompañante VIP, Trato de Novios, Cenas, Eventos';
 
-  // Añadir metadatos extendidos a la biografía
+  // Mantener biografía LIMPIA y adjuntar metadatos de forma estructurada con separador especial
   const extraDetails = [];
   if (aboutYou.length > 0) extraDetails.push(`✨ Características: ${aboutYou.join(', ')}`);
   if (attentionTo.length > 0) extraDetails.push(`👥 Atiendo a: ${attentionTo.join(', ')}`);
   if (placeOfService.length > 0) extraDetails.push(`📍 Lugar de encuentro: ${placeOfService.join(', ')}`);
   if (paymentMethods.length > 0) extraDetails.push(`💳 Métodos de pago: ${paymentMethods.join(', ')}`);
 
-  if (extraDetails.length > 0) {
-    bio = `${bio}\n\n${extraDetails.join('\n')}`;
-  }
+  const fullBio = extraDetails.length > 0
+    ? `${cleanBio}\n\n${extraDetails.join('\n')}`
+    : cleanBio;
 
-  // 8. Extraer Fotos y Limpiar Marcas de Agua
+  // 8. Extraer Fotos y Estampar Marca de Agua ESCORTSVIP.DO
   const rawPhotos = extractSkokkaPhotos(html, targetUrl);
 
   const escortId = `scraped_${Date.now()}`;
   const defaultPassword = await bcrypt.hash('123456', 10);
   const email = `${name.toLowerCase().replace(/\s+/g, '')}_${Date.now()}@imported.escortsvip.do`;
 
-  // Limpiar marcas de agua recortando la franja inferior con Sharp
-  const cleanedPhotos = [];
+  const watermarkedPhotos = [];
   for (let i = 0; i < rawPhotos.length; i++) {
-    const cleanUrl = await downloadAndCleanPhoto(rawPhotos[i], escortId, i);
-    cleanedPhotos.push(cleanUrl);
+    const cleanUrl = await downloadAndWatermarkPhoto(rawPhotos[i], escortId, i);
+    watermarkedPhotos.push(cleanUrl);
   }
 
-  const avatarUrl = cleanedPhotos.length > 0 ? cleanedPhotos[0] : 'assets/images/escorts/female1.jpg';
+  const avatarUrl = watermarkedPhotos.length > 0 ? watermarkedPhotos[0] : 'assets/images/escorts/female1.jpg';
 
   // Crear modelo en Base de Datos
   const escort = await db.createEscort({
@@ -254,7 +298,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     hourlyRate: 4000,
     currency: 'DOP',
     services: servicesFormatted,
-    bio,
+    bio: fullBio,
     avatarUrl,
     isAvailable: true,
     isVerified: true,
@@ -262,17 +306,17 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   });
 
   // Registrar fotos en la galería de la base de datos
-  for (const pUrl of cleanedPhotos) {
+  for (const pUrl of watermarkedPhotos) {
     await db.addPhoto(escort.id, pUrl, pUrl === avatarUrl);
   }
 
-  console.log(`[Scraper] ✅ Perfil importado con éxito: ${name} (Servicios: ${extractedServices.length}, Fotos sin marca de agua: ${cleanedPhotos.length}).`);
+  console.log(`[Scraper] ✅ Perfil importado con éxito: ${name} (Servicios: ${extractedServices.length}, Marca de agua ESCORTSVIP.DO estampada en ${watermarkedPhotos.length} fotos).`);
   return {
     success: true,
     escort,
-    importedPhotosCount: cleanedPhotos.length,
+    importedPhotosCount: watermarkedPhotos.length,
     extractedServices,
-    photos: cleanedPhotos
+    photos: watermarkedPhotos
   };
 }
 

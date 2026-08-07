@@ -24,7 +24,7 @@
 						</a>
 					</div>
 					<div class="mid-content">
-						<h5 class="title mb-0">Acceso a Proveedores</h5>
+						<h5 class="title mb-0">Iniciar Sesión</h5>
 					</div>
 				</div>
 			</div>
@@ -36,8 +36,8 @@
 				<div class="card border-0 shadow-sm mb-4">
 					<div class="card-body p-4">
 						<div class="text-center mb-4">
-							<h3 class="font-w700 text-dark">Bienvenida / Bienvenida</h3>
-							<p class="text-muted font-14">Ingresa con tus credenciales de Escort para administrar tu disponibilidad, fotos y tarifas.</p>
+							<h3 class="font-w700 text-dark">Acceso al Sistema</h3>
+							<p class="text-muted font-14">Ingresa con tu correo y contraseña registrados para acceder a tu panel de control.</p>
 						</div>
 
 						<div id="alertBox" class="alert alert-danger d-none" role="alert"></div>
@@ -81,8 +81,12 @@
 			const password = document.getElementById('password').value;
 
 			try {
-				await EscortAPI.login(email, password);
-				window.location.href = 'escort-dashboard.html';
+				const res = await EscortAPI.login(email, password);
+				if (res && res.redirectUrl) {
+					window.location.href = res.redirectUrl;
+				} else {
+					window.location.href = 'escort-dashboard.html';
+				}
 			} catch (err) {
 				alertBox.textContent = err.message;
 				alertBox.classList.remove('d-none');

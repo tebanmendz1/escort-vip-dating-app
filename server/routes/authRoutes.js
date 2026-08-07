@@ -5,6 +5,9 @@ import { generateToken, authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@escorts.com';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'admin123';
+
 // Registro exclusivo para Proveedores / Escorts (Mujeres, Hombres, Trans)
 router.post('/register', async (req, res) => {
   try {
@@ -38,18 +41,18 @@ router.post('/register', async (req, res) => {
       avatarUrl: gender === 'MALE' ? 'assets/images/avatar/5.jpg' : 'assets/images/avatar/1.jpg'
     });
 
-    const token = generateToken({ id: escort.id, email: escort.email, name: escort.name, gender: escort.gender });
+    const token = generateToken({ id: escort.id, email: escort.email, name: escort.name, gender: escort.gender, role: 'ESCORT' });
 
     // Excluir passwordHash de la respuesta
     const { passwordHash: _, ...escortData } = escort;
-    return res.status(201).json({ token, escort: escortData });
+    return res.status(201).json({ token, role: 'ESCORT', redirectUrl: 'escort-dashboard.html', escort: escortData });
   } catch (error) {
     console.error('Error en registro:', error);
     return res.status(500).json({ error: 'Error al registrar el perfil de escort.' });
   }
 });
 
-// Inicio de Sesión para Escorts
+// Inicio de Sesión Unificado (Detección automática de Admin o Escort)
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -58,7 +61,21 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Por favor ingresa tu correo y contraseña.' });
     }
 
-    const escort = await db.findEscortByEmail(email);
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Verificación si es Administrador
+    if (cleanEmail === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASS) {
+      const adminToken = generateToken({ id: 'admin_root', email: ADMIN_EMAIL, role: 'ADMIN' });
+      return res.json({
+        token: adminToken,
+        role: 'ADMIN',
+        redirectUrl: 'admin.html',
+        message: 'Bienvenido Administrador'
+      });
+    }
+
+    // 2. Verificación si es Escort
+    const escort = await db.findEscortByEmail(cleanEmail);
     if (!escort) {
       return res.status(401).json({ error: 'Credenciales inválidas.' });
     }
@@ -68,12 +85,17 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas.' });
     }
 
-    const token = generateToken({ id: escort.id, email: escort.email, name: escort.name, gender: escort.gender });
+    const token = generateToken({ id: escort.id, email: escort.email, name: escort.name, gender: escort.gender, role: 'ESCORT' });
     const { passwordHash: _, ...escortData } = escort;
 
-    return res.json({ token, escort: escortData });
+    return res.json({
+      token,
+      role: 'ESCORT',
+      redirectUrl: 'escort-dashboard.html',
+      escort: escortData
+    });
   } catch (error) {
-    console.error('Error en login:', error);
+    console.error('Error en login unificado:', error);
     return res.status(500).json({ error: 'Error al iniciar sesión.' });
   }
 });

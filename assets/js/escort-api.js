@@ -16,6 +16,7 @@ export const EscortAPI = {
   removeToken() {
     localStorage.removeItem('escort_token');
     localStorage.removeItem('escort_user');
+    localStorage.removeItem('escort_admin_token');
   },
   getCurrentUser() {
     const userStr = localStorage.getItem('escort_user');
@@ -56,8 +57,14 @@ export const EscortAPI = {
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Error al iniciar sesión');
     if (json.token) {
-      this.setToken(json.token);
-      localStorage.setItem('escort_user', JSON.stringify(json.escort));
+      if (json.role === 'ADMIN') {
+        localStorage.setItem('escort_admin_token', json.token);
+      } else {
+        this.setToken(json.token);
+        if (json.escort) {
+          localStorage.setItem('escort_user', JSON.stringify(json.escort));
+        }
+      }
     }
     return json;
   },
@@ -70,6 +77,12 @@ export const EscortAPI = {
     if (!res.ok) throw new Error(json.error || 'Error al obtener datos');
     localStorage.setItem('escort_user', JSON.stringify(json));
     return json;
+  },
+
+  async getWhatsappLead(id) {
+    try {
+      await fetch(`${API_BASE_URL}/public/escorts/${id}/whatsapp-click`, { method: 'POST' });
+    } catch (e) {}
   },
 
   // Public Catalog API
@@ -130,6 +143,14 @@ export const EscortAPI = {
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Error al subir foto');
     return json;
+  },
+
+  async deletePhoto(photoId) {
+    const res = await fetch(`${API_BASE_URL}/escort/photos/${photoId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(true)
+    });
+    return await res.json();
   }
 };
 

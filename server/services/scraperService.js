@@ -1,10 +1,60 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import path from 'path';
+import sharp from 'sharp';
 import { db } from '../db.js';
 
 /**
- * Extractor especializado de Fotos para Skokka y Clasificados Adultos
+ * Descarga y remueve la marca de agua inferior de Skokka usando Sharp
+ */
+async function downloadAndCleanPhoto(imageUrl, escortId, index) {
+  try {
+    const res = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0 Safari/537.36',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+      }
+    });
+
+    if (!res.ok) return imageUrl;
+
+    const buffer = Buffer.from(await res.arrayBuffer());
+    
+    // Leer dimensiones de la imagen con Sharp
+    const metadata = await sharp(buffer).metadata();
+    const { width, height } = metadata;
+
+    if (width && height && height > 200) {
+      // Recortar el 6.5% inferior donde Skokka estampa su marca de agua
+      const cropHeight = Math.floor(height * 0.935);
+      
+      const dirPath = path.join(process.cwd(), 'server', 'uploads', 'scraped');
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+      }
+
+      const filename = `escort_${escortId}_${index + 1}_${Date.now()}.jpg`;
+      const filePath = path.join(dirPath, filename);
+
+      await sharp(buffer)
+        .extract({ left: 0, top: 0, width, height: cropHeight })
+        .jpeg({ quality: 92 })
+        .toFile(filePath);
+
+      return `uploads/scraped/${filename}`;
+    }
+
+    return imageUrl;
+  } catch (err) {
+    console.error(`[Scraper] Error limpiando marca de agua en imagen ${index + 1}:`, err.message);
+    return imageUrl;
+  }
+}
+
+/**
+ * Extractor especializado de Fotos para Skokka
  */
 function extractSkokkaPhotos(html, targetUrl) {
   const photos = [];
@@ -13,7 +63,6 @@ function extractSkokkaPhotos(html, targetUrl) {
     if (!url || typeof url !== 'string') return;
     let clean = url.replace(/\\/g, '').replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
     
-    // Si viene dentro de objeto JSON/Vue {'url': 'https://...'}
     const urlMatch = clean.match(/(https?:\/\/[^\s"'<>]+(?:\.jpg|\.png|\.jpeg|\.webp)[^\s"'<>]*)/i);
     if (urlMatch) {
       clean = urlMatch[1];
@@ -38,10 +87,9 @@ function extractSkokkaPhotos(html, targetUrl) {
     }
   }
 
-  // 1. Decodificar entidades HTML como &#x27; en el HTML completo
   const decodedHtml = html.replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
 
-  // 2. Extraer de <post-gallery :items="[...]"> o JSON inline de Skokka
+  // 1. Extraer de <post-gallery :items="[...]"> de Skokka
   const postGalleryMatch = decodedHtml.match(/:items="(\[.*?\])"/s) || decodedHtml.match(/items:\s*(\[.*?\])/s);
   if (postGalleryMatch) {
     const rawItems = postGalleryMatch[1];
@@ -51,22 +99,16 @@ function extractSkokkaPhotos(html, targetUrl) {
     }
   }
 
-  // 3. Extraer de metatag og:image
+  // 2. Metatag og:image
   const $ = cheerio.load(html);
   $('meta[property="og:image"], meta[name="og:image"]').each((i, el) => {
     pushPhoto($(el).attr('content'));
   });
 
-  // 4. Extraer de enlaces de imagen de Skokka / CDN
+  // 3. URLs de Skokka / CDN
   const skokkaPattern = /(https?:\/\/do\.skokka\.com\/image\/post\/[^\s"'<>\)\\]+)/gi;
   let match;
   while ((match = skokkaPattern.exec(decodedHtml)) !== null) {
-    pushPhoto(match[1]);
-  }
-
-  // 5. Extraer cualquier otra URL de imagen .jpg/.jpeg/.png/.webp
-  const genPattern = /(https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp))/gi;
-  while ((match = genPattern.exec(decodedHtml)) !== null) {
     pushPhoto(match[1]);
   }
 
@@ -74,7 +116,7 @@ function extractSkokkaPhotos(html, targetUrl) {
 }
 
 /**
- * Función Principal para parsear HTML de Skokka e Importar Perfil
+ * Función Principal para parsear HTML de Skokka e Importar Perfil con Metadatos Completos y Remover Marca de Agua
  */
 export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.skokka.com', customCity = 'Santo Domingo', customGender = 'FEMALE') {
   const $ = cheerio.load(html);
@@ -84,7 +126,6 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   let fullTitle = $('h1[data-testid="ad-detail-title"], h1').first().text().trim();
   
   let name = nickname || fullTitle || $('title').text().split('-')[0].trim() || 'Modelo VIP';
-  // Limpiar emojis y caracteres especiales del título si era muy largo
   name = name.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').trim();
   if (!name || name.length < 2) name = 'Yesica VIP';
   if (name.length > 25) name = name.substring(0, 25);
@@ -126,18 +167,77 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   }
   bio = bio.substring(0, 400) || `Hola amor, recién llegada. Escríbeme y disfruta conmigo en ${city}.`;
 
-  // 6. Extraer Nacionalidad si existe en tags
+  // 6. Extraer Secciones Estructuradas (:hierarchy JSON: Servicios, A quien atiende, Lugar de encuentro, Métodos de Pago)
+  let extractedServices = [];
+  let attentionTo = [];
+  let placeOfService = [];
+  let paymentMethods = [];
+  let aboutYou = [];
+
+  const hierarchyMatch = html.match(/:hierarchy='(.*?)'/s) || html.match(/:hierarchy="(.*?)"/s);
+  if (hierarchyMatch) {
+    try {
+      const hierarchyData = JSON.parse(hierarchyMatch[1]);
+      if (hierarchyData && hierarchyData.sections) {
+        hierarchyData.sections.forEach(sec => {
+          if (sec.code === 'services' && sec.tags) {
+            extractedServices = sec.tags.map(t => t.title);
+          } else if (sec.code === 'attention_to' && sec.tags) {
+            attentionTo = sec.tags.map(t => t.title);
+          } else if (sec.code === 'place_of_service' && sec.tags) {
+            placeOfService = sec.tags.map(t => t.title);
+          } else if (sec.code === 'payment_methods' && sec.tags) {
+            paymentMethods = sec.tags.map(t => t.title);
+          } else if (sec.code === 'section_about_you' && sec.tags) {
+            aboutYou = sec.tags.map(t => t.title);
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('[Scraper] No se pudo parsear :hierarchy JSON:', e.message);
+    }
+  }
+
+  // 7. Extraer Nacionalidad si existe en tags
   let nationality = 'Dominicana';
-  if (html.includes('Colombiana')) nationality = 'Colombiana';
-  else if (html.includes('Venezolana')) nationality = 'Venezolana';
-  else if (html.includes('Dominicana')) nationality = 'Dominicana';
+  const natTag = aboutYou.find(t => t.includes('Colombiana') || t.includes('Venezolana') || t.includes('Dominicana'));
+  if (natTag) {
+    nationality = natTag.replace(/[^\w]/g, '').trim() || 'Colombiana';
+  } else if (html.includes('Colombiana')) {
+    nationality = 'Colombiana';
+  }
 
-  // 7. Extraer Galería Completa de Fotos
-  const photos = extractSkokkaPhotos(html, targetUrl);
+  // Formatear servicios
+  const servicesFormatted = extractedServices.length > 0
+    ? extractedServices.join(', ')
+    : 'Acompañante VIP, Trato de Novios, Cenas, Eventos';
 
-  const avatarUrl = photos.length > 0 ? photos[0] : 'assets/images/escorts/female1.jpg';
+  // Añadir metadatos extendidos a la biografía
+  const extraDetails = [];
+  if (aboutYou.length > 0) extraDetails.push(`✨ Características: ${aboutYou.join(', ')}`);
+  if (attentionTo.length > 0) extraDetails.push(`👥 Atiendo a: ${attentionTo.join(', ')}`);
+  if (placeOfService.length > 0) extraDetails.push(`📍 Lugar de encuentro: ${placeOfService.join(', ')}`);
+  if (paymentMethods.length > 0) extraDetails.push(`💳 Métodos de pago: ${paymentMethods.join(', ')}`);
+
+  if (extraDetails.length > 0) {
+    bio = `${bio}\n\n${extraDetails.join('\n')}`;
+  }
+
+  // 8. Extraer Fotos y Limpiar Marcas de Agua
+  const rawPhotos = extractSkokkaPhotos(html, targetUrl);
+
+  const escortId = `scraped_${Date.now()}`;
   const defaultPassword = await bcrypt.hash('123456', 10);
   const email = `${name.toLowerCase().replace(/\s+/g, '')}_${Date.now()}@imported.escortsvip.do`;
+
+  // Limpiar marcas de agua recortando la franja inferior con Sharp
+  const cleanedPhotos = [];
+  for (let i = 0; i < rawPhotos.length; i++) {
+    const cleanUrl = await downloadAndCleanPhoto(rawPhotos[i], escortId, i);
+    cleanedPhotos.push(cleanUrl);
+  }
+
+  const avatarUrl = cleanedPhotos.length > 0 ? cleanedPhotos[0] : 'assets/images/escorts/female1.jpg';
 
   // Crear modelo en Base de Datos
   const escort = await db.createEscort({
@@ -153,7 +253,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     whatsapp,
     hourlyRate: 4000,
     currency: 'DOP',
-    services: 'Acompañante VIP, Trato de Novios, Cenas, Eventos',
+    services: servicesFormatted,
     bio,
     avatarUrl,
     isAvailable: true,
@@ -162,16 +262,17 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   });
 
   // Registrar fotos en la galería de la base de datos
-  for (const pUrl of photos) {
+  for (const pUrl of cleanedPhotos) {
     await db.addPhoto(escort.id, pUrl, pUrl === avatarUrl);
   }
 
-  console.log(`[Scraper] ✅ Perfil importado con éxito: ${name} (Edad: ${age}, Ciudad: ${city}, Tel: ${whatsapp}) con ${photos.length} fotos.`);
+  console.log(`[Scraper] ✅ Perfil importado con éxito: ${name} (Servicios: ${extractedServices.length}, Fotos sin marca de agua: ${cleanedPhotos.length}).`);
   return {
     success: true,
     escort,
-    importedPhotosCount: photos.length,
-    photos
+    importedPhotosCount: cleanedPhotos.length,
+    extractedServices,
+    photos: cleanedPhotos
   };
 }
 
@@ -184,7 +285,7 @@ export async function scrapeAndImportProfile(targetUrl, customCity = 'Santo Domi
   const response = await fetch(targetUrl, {
     method: 'GET',
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0 Safari/537.36',
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
       'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8'
     }

@@ -15,8 +15,16 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Network first strategy for fresh content
+  // Ignore external third-party requests (Adcash, Google Fonts, CDNs)
+  if (!e.request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request).catch(async () => {
+      const cached = await caches.match(e.request);
+      if (cached) return cached;
+      return new Response('', { status: 408, statusText: 'Request Timed Out' });
+    })
   );
 });

@@ -258,6 +258,64 @@
 				</div>
 			</div>
 
+			<!-- AVISO DE PROMOCIÓN & DESTACAR PERFIL VIP -->
+			<div class="dash-card position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, #1D1429 0%, #2D1229 100%) !important; border: 2px solid #FF2A7A !important; box-shadow: 0 10px 30px rgba(255, 42, 122, 0.25) !important;">
+				<div class="d-flex align-items-center justify-content-between mb-3">
+					<div>
+						<span class="badge bg-warning text-dark font-w800 px-3 py-2 rounded-pill mb-2 font-12"><i class="fa-solid fa-crown me-1"></i> PLANES DE PROMOCIÓN VIP</span>
+						<h4 class="font-w800 text-white mb-1" style="font-family: 'Outfit', sans-serif;">🔥 ¡Multiplica tus Clientes Destacando tu Perfil!</h4>
+						<p class="text-white-50 font-14 mb-0">Los perfiles VIP aparecen en las primeras posiciones y en el carrusel de recomendadas de la página principal.</p>
+					</div>
+				</div>
+
+				<div class="row g-3 my-2">
+					<!-- Plan 1: 24h -->
+					<div class="col-md-4">
+						<div class="p-3 text-center rounded-4 h-100 d-flex flex-column justify-content-between" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);">
+							<div>
+								<span class="badge bg-secondary rounded-pill font-11 mb-2">⚡ RÁPIDO</span>
+								<h5 class="text-white font-w700 mb-1">Destacado 24 Horas</h5>
+								<div class="font-28 font-w800 text-primary mb-2">RD$ 500</div>
+								<small class="text-white-50 font-12 d-block mb-3">Posicionamiento VIP durante 1 día completo</small>
+							</div>
+							<button class="btn btn-outline-light btn-sm rounded-pill w-100 font-w700" onclick="requestVipPlan('24 Horas', 500)">
+								Solicitar 24h (RD$500)
+							</button>
+						</div>
+					</div>
+
+					<!-- Plan 2: 4 Días (MÁS POPULAR) -->
+					<div class="col-md-4">
+						<div class="p-3 text-center rounded-4 h-100 d-flex flex-column justify-content-between position-relative" style="background: linear-gradient(135deg, rgba(255,42,122,0.2) 0%, rgba(121,40,202,0.2) 100%); border: 2px solid #FF2A7A;">
+							<span class="position-absolute top-0 start-50 translate-middle badge bg-danger rounded-pill font-11 px-3">🔥 MÁS POPULAR</span>
+							<div class="mt-2">
+								<h5 class="text-white font-w700 mb-1">Destacado 4 Días</h5>
+								<div class="font-28 font-w800 text-warning mb-2">RD$ 1,500</div>
+								<small class="text-white-50 font-12 d-block mb-3">Máxima visibilidad durante el fin de semana</small>
+							</div>
+							<button class="btn btn-primary btn-sm rounded-pill w-100 font-w700" style="background: var(--primary-gradient);" onclick="requestVipPlan('4 Días', 1500)">
+								⭐ Solicitar 4 Días (RD$1500)
+							</button>
+						</div>
+					</div>
+
+					<!-- Plan 3: 7 Días -->
+					<div class="col-md-4">
+						<div class="p-3 text-center rounded-4 h-100 d-flex flex-column justify-content-between" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);">
+							<div>
+								<span class="badge bg-success rounded-pill font-11 mb-2">👑 MEJOR VALOR</span>
+								<h5 class="text-white font-w700 mb-1">Destacado 7 Días</h5>
+								<div class="font-28 font-w800 text-success mb-2">RD$ 2,000</div>
+								<small class="text-white-50 font-12 d-block mb-3">1 semana completa en el TOP VIP (Ahorra dinero)</small>
+							</div>
+							<button class="btn btn-outline-success btn-sm rounded-pill w-100 font-w700" onclick="requestVipPlan('7 Días (1 Semana)', 2000)">
+								👑 Solicitar 7 Días (RD$2000)
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<!-- PUBLICAR HISTORIA DE 24 HORAS -->
 			<div class="dash-card" style="border: 2px solid #FF2A7A !important;">
 				<div class="d-flex align-items-center gap-2 mb-1">
@@ -723,10 +781,11 @@
 			}
 		});
 
-		document.getElementById('logoutBtn').addEventListener('click', () => {
-			EscortAPI.removeToken();
-			window.location.href = 'index.html';
-		});
+		window.requestVipPlan = (planName, price) => {
+			const escortName = currentEscortProfile ? currentEscortProfile.name : 'Modelo Escort';
+			const text = encodeURIComponent(`Hola Administrador, deseo activar la Promoción VIP para destacar mi perfil en escortsvip.do.\n\n✨ Plan Seleccionado: ${planName} (RD$ ${price})\n👤 Nombre del Perfil: ${escortName}`);
+			window.open(`https://wa.me/18095551234?text=${text}`, '_blank');
+		};
 
 		loadDashboard();
 	</script>

@@ -5,7 +5,7 @@
   "main": "server/index.js",
   "type": "module",
   "scripts": {
-    "start": "node server/index.js",
+    "start": "npx prisma db push --skip-generate || true; node server/index.js",
     "dev": "node --watch server/index.js",
     "db:push": "prisma db push",
     "db:seed": "node server/seed.js"

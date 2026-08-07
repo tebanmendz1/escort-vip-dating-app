@@ -83,7 +83,7 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
         filtered = escorts;
       }
 
-      const baseUrl = process.env.BASE_URL || 'https://escortsvip.do';
+      const baseUrl = process.env.BASE_URL || 'https://www.citasrd.app';
       const canonicalUrl = `${baseUrl}/${slug}`;
 
       // Generar HTML de Escorts
@@ -133,7 +133,7 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
 	<meta property="og:title" content="${config.title}">
 	<meta property="og:description" content="${config.metaDesc}">
 	<meta property="og:url" content="${canonicalUrl}">
-	<meta property="og:site_name" content="Escort VIP República Dominicana">
+	<meta property="og:site_name" content="CitasRD.app - Escorts VIP República Dominicana">
 
 	<!-- Bootstrap & FontAwesome -->
 	<link rel="stylesheet" href="${baseUrl}/assets/css/style.css">
@@ -153,7 +153,7 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
 	<header class="seo-header">
 		<div class="container">
 			<a href="${baseUrl}" class="text-white text-decoration-none font-24 font-w800 d-block mb-3">
-				<i class="fa-solid fa-fire text-white me-2"></i> ESCORT VIP RD
+				<i class="fa-solid fa-fire text-white me-2"></i> CITASRD.APP
 			</a>
 			<h1 class="text-white font-w800 font-28 mb-2">${config.h1}</h1>
 			<p class="text-white-50 font-14 max-w-600 mx-auto">${config.introText}</p>
@@ -198,7 +198,7 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
 
 	<footer class="bg-dark border-top border-secondary py-4 text-center text-white-50 font-13">
 		<div class="container">
-			<p>© 2026 Escort VIP República Dominicana. Todos los derechos reservados. Sitio para mayores de 18 años.</p>
+			<p>© 2026 CitasRD.app - Todos los derechos reservados. Sitio para mayores de 18 años.</p>
 		</div>
 	</footer>
 </body>

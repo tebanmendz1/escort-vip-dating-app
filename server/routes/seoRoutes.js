@@ -60,7 +60,7 @@ router.get('/sitemap.xml', async (req, res) => {
       if (escort.avatarUrl) {
         xml += `    <image:image>\n`;
         xml += `      <image:loc>${baseUrl}/${escort.avatarUrl.replace(/^\//, '')}</image:loc>\n`;
-        xml += `      <image:title>${escort.name} - Escort VIP en ${escort.city}</image:title>\n`;
+        xml += `      <image:title>${escort.name} - Escort VIP en ${escort.city} | CitasRD.app</image:title>\n`;
         xml += `    </image:image>\n`;
       }
       xml += `  </url>\n`;

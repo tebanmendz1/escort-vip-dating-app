@@ -50,7 +50,7 @@ function createWatermarkSvg(width, height) {
       <g transform="translate(${centerX}, ${centerY})">
         <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" class="watermark-pill"/>
         <text x="${svgWidth / 2}" y="${svgHeight / 2 + fontSize * 0.35}" text-anchor="middle" class="watermark-text">
-          <tspan class="watermark-sub">🔥 </tspan>ESCORTSVIP.DO
+          <tspan class="watermark-sub">🔥 </tspan>CITASRD.APP
         </text>
       </g>
     </svg>
@@ -276,7 +276,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
 
   const escortId = `scraped_${Date.now()}`;
   const defaultPassword = await bcrypt.hash('123456', 10);
-  const email = `${name.toLowerCase().replace(/\s+/g, '')}_${Date.now()}@imported.escortsvip.do`;
+  const email = `${name.toLowerCase().replace(/\s+/g, '')}_${Date.now()}@imported.citasrd.app`;
 
   const watermarkedPhotos = [];
   for (let i = 0; i < rawPhotos.length; i++) {
@@ -313,7 +313,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     await db.addPhoto(escort.id, pUrl, pUrl === avatarUrl);
   }
 
-  console.log(`[Scraper] ✅ Perfil importado con éxito: ${name} (Marca de agua central ESCORTSVIP.DO estampada cubriendo Skokka en ${watermarkedPhotos.length} fotos).`);
+  console.log(`[Scraper] ✅ Perfil importado con éxito: ${name} (Marca de agua central CITASRD.APP estampada cubriendo Skokka en ${watermarkedPhotos.length} fotos).`);
   return {
     success: true,
     escort,

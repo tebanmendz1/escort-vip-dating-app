@@ -1,9 +1,9 @@
 /**
  * Canvas Watermark Utility
- * Aplica una marca de agua transparente 'ESCORT VIP' a las imágenes antes de subirlas.
+ * Aplica una marca de agua transparente 'CITASRD.APP' a las imágenes antes de subirlas.
  */
 
-export function applyWatermarkToImage(file, watermarkText = 'ESCORT VIP') {
+export function applyWatermarkToImage(file, watermarkText = 'CITASRD.APP') {
   return new Promise((resolve, reject) => {
     if (!file.type.startsWith('image/')) {
       // If it's a video, pass it as-is

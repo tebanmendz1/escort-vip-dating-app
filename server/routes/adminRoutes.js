@@ -116,6 +116,16 @@ router.patch('/escorts/:id/block', requireAdmin, async (req, res) => {
   }
 });
 
+// Delete Escort Profile
+router.delete('/escorts/:id', requireAdmin, async (req, res) => {
+  try {
+    await db.deleteEscort(req.params.id);
+    return res.json({ success: true, message: 'Perfil eliminado correctamente' });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // Get Admin Config (ADS & Anti-Adblock)
 router.get('/config', requireAdmin, async (req, res) => {
   try {

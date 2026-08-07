@@ -430,9 +430,14 @@
 								: '<span class="badge bg-success">ACTIVO</span>'}
 						</td>
 						<td>
-							<button class="btn btn-sm ${escort.isBlocked ? 'btn-outline-success' : 'btn-outline-danger'}" onclick="toggleBlock('${escort.id}', ${!escort.isBlocked})">
-								${escort.isBlocked ? 'Desbloquear' : 'Bloquear'}
-							</button>
+							<div class="d-flex gap-1">
+								<button class="btn btn-sm ${escort.isBlocked ? 'btn-outline-success' : 'btn-outline-warning'}" onclick="toggleBlock('${escort.id}', ${!escort.isBlocked})">
+									${escort.isBlocked ? 'Desbloquear' : 'Bloquear'}
+								</button>
+								<button class="btn btn-sm btn-danger font-w600" onclick="deleteEscortProfile('${escort.id}', '${escort.name.replace(/'/g, "\\'")}')" title="Eliminar Perfil Definitivamente">
+									<i class="fa-solid fa-trash"></i>
+								</button>
+							</div>
 						</td>
 					`;
 					tbody.appendChild(tr);
@@ -441,6 +446,22 @@
 				console.error(err);
 			}
 		}
+
+		window.deleteEscortProfile = async (id, name) => {
+			if (!confirm(`⚠️ ¿Estás seguro de que deseas eliminar el perfil de "${name}"? Esta acción borrará todas sus fotos y datos de forma permanente.`)) return;
+			try {
+				const res = await fetch(`/api/admin/escorts/${id}`, {
+					method: 'DELETE',
+					headers: { 'Authorization': `Bearer ${adminToken}` }
+				});
+				const data = await res.json();
+				if (!res.ok) throw new Error(data.error || 'Error al eliminar el perfil');
+				alert(`¡Perfil de ${name} eliminado correctamente!`);
+				loadEscortsTable();
+			} catch (err) {
+				alert(err.message);
+			}
+		};
 
 		window.toggleVerify = async (id, isVerified) => {
 			await fetch(`/api/admin/escorts/${id}/verify`, {

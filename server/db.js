@@ -314,6 +314,26 @@ export const db = {
     return { ...store.escorts[index], photos, stories };
   },
 
+  async deleteEscort(id) {
+    if (prisma) {
+      try {
+        await prisma.photo.deleteMany({ where: { escortId: id } });
+        await prisma.story.deleteMany({ where: { escortId: id } });
+        await prisma.escort.delete({ where: { id } });
+        return true;
+      } catch (e) {
+        console.warn('Prisma deleteEscort fallback:', e.message);
+      }
+    }
+
+    const store = loadJsonStore();
+    store.escorts = store.escorts.filter(e => e.id !== id);
+    store.photos = store.photos.filter(p => p.escortId !== id);
+    if (store.stories) store.stories = store.stories.filter(s => s.escortId !== id);
+    saveJsonStore(store);
+    return true;
+  },
+
   async addPhoto(escortId, photoUrl, isPrimary = false, mediaType = 'IMAGE') {
     if (prisma) {
       try {

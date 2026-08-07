@@ -262,8 +262,6 @@ function extractSkokkaPhotos(html, targetUrl) {
   while ((match = genericPhotoPattern.exec(decodedHtml)) !== null) {
     pushPhoto(match[1]);
   }
-    pushPhoto(match[1]);
-  }
 
   return photos.slice(0, 15);
 }

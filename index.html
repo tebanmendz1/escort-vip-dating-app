@@ -1154,9 +1154,8 @@
 			}
 		}
 
-		let swipeCounter = 0;
-
-		function renderSwipeCard() {
+		window.swipeCounter = 0;
+		window.renderSwipeCard = function() {
 			const container = document.getElementById('swipeCardContainer');
 			if (!escortsList || escortsList.length === 0) {
 				container.innerHTML = `<div class="text-center py-5 text-muted font-14">No se encontraron perfiles con los filtros seleccionados.</div>`;
@@ -1167,7 +1166,7 @@
 			if (currentCardIndex < 0) currentCardIndex = escortsList.length - 1;
 
 			// Interstitial In-Deck Ad Banner Zone cada 4 deslizamientos
-			if (swipeCounter > 0 && swipeCounter % 4 === 0) {
+			if (window.swipeCounter > 0 && window.swipeCounter % 4 === 0) {
 				container.innerHTML = `
 					<div class="dating-swipe-card d-flex flex-column align-items-center justify-content-center text-center p-4" style="background: linear-gradient(145deg, #181926 0%, #0d0e15 100%);">
 						<div class="badge bg-warning text-dark font-w800 px-3 py-2 rounded-pill mb-3 font-12" style="letter-spacing: 0.5px;">
@@ -1176,7 +1175,7 @@
 						<div id="deckAdSlot" style="min-height: 250px; width: 100%; display: flex; align-items: center; justify-content: center; border-radius: 16px; overflow: hidden; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,42,122,0.4);">
 							<span class="text-white-50 font-12"><i class="fa-solid fa-bullhorn me-1 text-primary"></i> Anuncio Patrocinado</span>
 						</div>
-						<button class="btn btn-primary rounded-pill px-4 py-2 mt-4 font-w700 font-14 shadow-lg" style="background: var(--primary-gradient);" onclick="event.stopPropagation(); swipeCounter++; renderSwipeCard();">
+						<button class="btn btn-primary rounded-pill px-4 py-2 mt-4 font-w700 font-14 shadow-lg" style="background: var(--primary-gradient);" onclick="event.stopPropagation(); window.nextSwipeCard();">
 							Siguiente Perfil <i class="fa-solid fa-arrow-right ms-1"></i>
 						</button>
 					</div>
@@ -1186,8 +1185,13 @@
 					if (typeof window.aclib !== 'undefined' && window.aclib && typeof window.aclib.runBanner === 'function') {
 						try {
 							const slot = document.getElementById('deckAdSlot');
-							if (slot) slot.innerHTML = '';
-							window.aclib.runBanner({ zoneId: '11927526' });
+							if (slot) {
+								slot.innerHTML = '';
+								const adScript = document.createElement('script');
+								adScript.type = 'text/javascript';
+								adScript.text = "if (typeof aclib !== 'undefined' && aclib.runBanner) { aclib.runBanner({ zoneId: '11927526' }); }";
+								slot.appendChild(adScript);
+							}
 						} catch (e) {
 							console.warn('[Adcash] Warning:', e);
 						}
@@ -1397,16 +1401,20 @@
 			});
 		});
 
+		window.nextSwipeCard = function() {
+			window.swipeCounter++;
+			currentCardIndex++;
+			window.renderSwipeCard();
+		};
+
 		// Swipe Controls
 		document.getElementById('btnPrevCard').addEventListener('click', () => {
-			swipeCounter++;
+			window.swipeCounter++;
 			currentCardIndex--;
-			renderSwipeCard();
+			window.renderSwipeCard();
 		});
 		document.getElementById('btnNextCard').addEventListener('click', () => {
-			swipeCounter++;
-			currentCardIndex++;
-			renderSwipeCard();
+			window.nextSwipeCard();
 		});
 
 		// Apply & Reset Filters

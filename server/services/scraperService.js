@@ -90,14 +90,22 @@ function createWatermarkSvg(width, height) {
  */
 async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
   try {
-    const res = await fetch(imageUrl, {
+    let fetchUrl = imageUrl;
+    if (fetchUrl.startsWith('//')) fetchUrl = `https:${fetchUrl}`;
+
+    const res = await fetch(fetchUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/121.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Referer': 'https://do.skokka.com/',
+        'Origin': 'https://do.skokka.com',
         'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
       }
     });
 
-    if (!res.ok) return imageUrl;
+    if (!res.ok) {
+      console.warn(`[Scraper] HTTP ${res.status} al descargar foto ${index + 1}: ${fetchUrl}`);
+      return null;
+    }
 
     const buffer = Buffer.from(await res.arrayBuffer());
     
@@ -105,7 +113,7 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
     const metadata = await sharp(buffer).metadata();
     const { width, height } = metadata;
 
-    if (width && height && height > 150) {
+    if (width && height && height > 100) {
       const uploadsDir = process.env.UPLOADS_DIR || (fs.existsSync('/data/uploads') ? '/data/uploads' : path.join(process.cwd(), 'server', 'uploads'));
       const dirPath = path.join(uploadsDir, 'scraped');
       if (!fs.existsSync(dirPath)) {
@@ -125,10 +133,10 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
       return `uploads/scraped/${filename}`;
     }
 
-    return imageUrl;
+    return null;
   } catch (err) {
     console.error(`[Scraper] Error al estampar marca de agua central ESCORTSVIP.DO en imagen ${index + 1}:`, err.message);
-    return imageUrl;
+    return null;
   }
 }
 
@@ -343,7 +351,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   const watermarkedPhotos = [];
   for (let i = 0; i < rawPhotos.length; i++) {
     const cleanUrl = await downloadAndWatermarkPhoto(rawPhotos[i], escortId, i);
-    watermarkedPhotos.push(cleanUrl);
+    if (cleanUrl) watermarkedPhotos.push(cleanUrl);
   }
 
   const avatarUrl = watermarkedPhotos.length > 0 ? watermarkedPhotos[0] : 'assets/images/escorts/female1.jpg';

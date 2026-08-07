@@ -120,13 +120,8 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
       const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
-	<!-- Adcash Network Monetization -->
+	<!-- Adcash Library -->
 	<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
-	<script type="text/javascript">
-		aclib.runAutoTag({
-			zoneId: 'hoj7opxahb',
-		});
-	</script>
 
 	<title>${config.title}</title>
 	<meta charset="utf-8">
@@ -174,8 +169,19 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
 			<a href="${baseUrl}" class="btn btn-outline-light btn-sm rounded-pill px-3">Ver Todos en App</a>
 		</div>
 
-		<div class="row">
+		<div class="row mb-4">
 			${escortsCardsHtml}
+		</div>
+
+		<!-- Adcash Banner Monetization Slot (ZoneID: 11927526) -->
+		<div class="my-4 text-center">
+			<div style="display: inline-block; max-width: 100%; overflow: hidden; border-radius: 12px;">
+				<script type="text/javascript">
+					aclib.runBanner({
+						zoneId: '11927526',
+					});
+				</script>
+			</div>
 		</div>
 
 		<!-- Sección de FAQs SEO -->

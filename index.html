@@ -1,29 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-	<!-- Adcash Network Monetization & Smart Frequency Control -->
+	<!-- Adcash Library -->
 	<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
-	<script type="text/javascript">
-		(function() {
-			try {
-				const lastAd = parseInt(localStorage.getItem('citasrd_last_ad_time') || '0');
-				const now = Date.now();
-				// Cooldown de 15 minutos por defecto por usuario para no saturar
-				const cooldownMs = 15 * 60 * 1000;
-				
-				if (now - lastAd >= cooldownMs) {
-					localStorage.setItem('citasrd_last_ad_time', now.toString());
-					if (window.aclib && window.aclib.runAutoTag) {
-						aclib.runAutoTag({ zoneId: 'hoj7opxahb' });
-					}
-				}
-			} catch(e) {
-				if (window.aclib && window.aclib.runAutoTag) {
-					aclib.runAutoTag({ zoneId: 'hoj7opxahb' });
-				}
-			}
-		})();
-	</script>
 
 	<!-- Title SEO -->
 	<title>CitasRD.app | Escorts VIP en República Dominicana | Directorio de Acompañantes 24h</title>
@@ -719,6 +698,17 @@
 			<!-- MODE 2: Badoo Style Grid Explore View -->
 			<div id="gridViewSection" class="grid-container d-none">
 				<!-- Carga dinámica de rejilla -->
+			</div>
+
+			<!-- Adcash Banner Monetization Slot (ZoneID: 11927526) -->
+			<div class="container my-3 text-center">
+				<div style="display: inline-block; max-width: 100%; overflow: hidden; border-radius: 12px;">
+					<script type="text/javascript">
+						aclib.runBanner({
+							zoneId: '11927526',
+						});
+					</script>
+				</div>
 			</div>
 
 			<!-- SEO Internal Links Bar for Dominican Republic Cities -->

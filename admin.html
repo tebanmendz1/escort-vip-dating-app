@@ -198,7 +198,7 @@
 
 						<div class="col-md-6 mb-3">
 							<label class="form-label font-w600">ID de Zona Adcash (ZoneID)</label>
-							<input type="text" id="adcashZoneId" class="form-control font-mono" value="hoj7opxahb" placeholder="hoj7opxahb">
+							<input type="text" id="adcashZoneId" class="form-control font-mono" value="11927526" placeholder="11927526">
 							<small class="text-white-50 font-11">Identificador de tu zona publicitaria en Adcash.</small>
 						</div>
 					</div>
@@ -475,7 +475,7 @@
 				const config = await res.json();
 				document.getElementById('adsEnabled').checked = config.adsEnabled;
 				document.getElementById('adFrequency').value = config.adFrequency !== undefined ? config.adFrequency : 15;
-				document.getElementById('adcashZoneId').value = config.adcashZoneId || 'hoj7opxahb';
+				document.getElementById('adcashZoneId').value = config.adcashZoneId || '11927526';
 				document.getElementById('bannerCode').value = config.bannerCode || '';
 				document.getElementById('antiAdblock').checked = config.antiAdblock;
 			} catch (err) {

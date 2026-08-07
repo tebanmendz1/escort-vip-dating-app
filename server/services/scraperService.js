@@ -10,22 +10,59 @@ import { db } from '../db.js';
  * Genera un Watermark SVG colocado estratégicamente en el CENTRO de la imagen (donde Skokka estampa su logo)
  */
 function createWatermarkSvg(width, height) {
-  const fontSize = Math.max(18, Math.floor(width * 0.052));
   const svgWidth = Math.floor(width * 0.78);
-  const svgHeight = Math.floor(fontSize * 2.5);
+  const svgHeight = Math.floor(Math.max(30, width * 0.12));
 
   // Posición CENTRAL exacta donde Skokka coloca su logo
   const centerX = Math.floor((width - svgWidth) / 2);
   const centerY = Math.floor((height - svgHeight) / 2);
 
-  const iconSize = Math.floor(fontSize * 1.1);
-  const iconY = Math.floor((svgHeight - iconSize) / 2);
+  const flameSize = Math.floor(svgHeight * 0.58);
+  const flameY = Math.floor((svgHeight - flameSize) / 2);
+  const scale = (svgHeight * 0.48) / 24;
+
+  const fontPaths = {
+    'C': 'M14 4C8.5 4 4 8.5 4 14s4.5 10 10 10c3.5 0 6.5-1.8 8.2-4.5h-4.2c-1.1 1.5-2.5 2.2-4 2.2-3.3 0-6-2.7-6-6s2.7-6 6-6c1.5 0 2.9.7 4 2.2h4.2C20.5 5.8 17.5 4 14 4z',
+    'I': 'M4 4h5v20H4z',
+    'T': 'M2 4h16v4.5h-5.5V24h-5V8.5H2z',
+    'A': 'M8.5 4h5l6 20h-4.8l-1.3-4.5H8.6L7.3 24H2.5zM11 7.8L9.5 15h4z',
+    'S': 'M12 4C8 4 4 6 4 10.5c0 6.5 9 4.2 9 8 0 1.8-1.5 3-4 3-2.5 0-4.5-1.2-5.5-3H0c1.2 4.2 5 7.5 9.5 7.5 5.5 0 9.5-3 9.5-7.5 0-6.8-9-4.5-9-8.2 0-1.6 1.5-2.8 3.8-2.8 2.2 0 4 1 5 2.2h3.5C16.5 5.2 14.5 4 12 4z',
+    'R': 'M4 4h9c3.5 0 6 2 6 5.5 0 2.5-1.5 4.5-3.8 5.2L19 24h-5.5l-3.3-8.2H9V24H4V4zm5 4v5.5h3.8c1.5 0 2.5-.8 2.5-2.8 0-1.9-1-2.7-2.5-2.7H9z',
+    'D': 'M4 4h8.5c5.5 0 9.5 3.8 9.5 10s-4 10-9.5 10H4V4zm5 4.5v11h3.5c3.2 0 5.2-2.3 5.2-5.5s-2-5.5-5.2-5.5H9z',
+    '.': 'M2 19h5.5v5H2z',
+    'P': 'M4 4h9c3.5 0 6 2.2 6 5.8S16.5 15.5 13 15.5H9V24H4V4zm5 4v4.5h3.8c1.5 0 2.5-.8 2.5-2.3 0-1.5-1-2.2-2.5-2.2H9z'
+  };
+
+  const letterWidths = {
+    'C': 22, 'I': 10, 'T': 18, 'A': 20, 'S': 20, 'R': 20, 'D': 22, '.': 9, 'P': 19
+  };
+
+  const word = 'CITASRD.APP';
+  let totalWordWidth = 0;
+  for (let char of word) {
+    totalWordWidth += (letterWidths[char] || 18) + 4;
+  }
+
+  const startX = Math.floor((svgWidth - totalWordWidth * scale) / 2 + flameSize * 0.4);
+  const textY = Math.floor((svgHeight - 24 * scale) / 2);
+
+  let currentX = startX;
+  let letterPathsSvg = '';
+
+  for (let char of word) {
+    const p = fontPaths[char];
+    const w = letterWidths[char] || 18;
+    if (p) {
+      letterPathsSvg += `<g transform="translate(${Math.round(currentX)}, ${textY}) scale(${scale})"><path fill="#FFFFFF" d="${p}"/></g>`;
+    }
+    currentX += (w + 4) * scale;
+  }
 
   return `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.9"/>
+          <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.95"/>
         </filter>
         <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#FF2A7A"/>
@@ -34,15 +71,15 @@ function createWatermarkSvg(width, height) {
       </defs>
       <g transform="translate(${centerX}, ${centerY})" filter="url(#shadow)">
         <!-- Container Pill Badge -->
-        <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" rx="${Math.floor(svgHeight / 2)}" ry="${Math.floor(svgHeight / 2)}" fill="#0A0B14" fill-opacity="0.95" stroke="#FF2A7A" stroke-width="3"/>
+        <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" rx="${Math.floor(svgHeight / 2)}" ry="${Math.floor(svgHeight / 2)}" fill="#0A0B14" fill-opacity="0.96" stroke="#FF2A7A" stroke-width="3"/>
         
         <!-- Vector Flame Icon -->
-        <g transform="translate(${Math.floor(svgWidth * 0.07)}, ${iconY}) scale(${iconSize / 24})">
+        <g transform="translate(${Math.floor(svgWidth * 0.05)}, ${flameY}) scale(${flameSize / 24})">
           <path fill="url(#neonGrad)" d="M12 23c6.075 0 11-4.925 11-11 0-4.04-2.18-7.57-5.43-9.5a.75.75 0 0 0-1.12.82c.45 1.83.1 3.82-.99 5.34-1.2 1.67-3.15 2.5-5.11 2.22a8.03 8.03 0 0 1-5.74-5.38.75.75 0 0 0-1.3-.23C2.12 7.08 1 9.9 1 12c0 6.075 4.925 11 11 11z"/>
         </g>
 
-        <!-- Brand Text -->
-        <text x="${Math.floor(svgWidth / 2 + iconSize * 0.4)}" y="${Math.floor(svgHeight / 2 + fontSize * 0.35)}" text-anchor="middle" fill="#FFFFFF" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="${fontSize}px" font-weight="900" letter-spacing="2px">CITASRD.APP</text>
+        <!-- Pure Vector Text Paths (0% Font Dependency) -->
+        ${letterPathsSvg}
       </g>
     </svg>
   `;

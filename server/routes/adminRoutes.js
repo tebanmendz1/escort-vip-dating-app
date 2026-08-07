@@ -1,6 +1,7 @@
 import express from 'express';
 import { db } from '../db.js';
 import { generateToken, authenticateToken } from '../middleware/auth.js';
+import { scrapeAndImportProfile } from '../services/scraperService.js';
 
 const router = express.Router();
 
@@ -38,6 +39,22 @@ router.post('/change-password', requireAdmin, (req, res) => {
   }
   currentAdminPass = newPassword;
   return res.json({ success: true, message: 'Contraseña del Administrador actualizada con éxito.' });
+});
+
+// Endpoint de Scraper / Auto-Importador para Admin
+router.post('/scrape-profile', requireAdmin, async (req, res) => {
+  try {
+    const { targetUrl, city, gender } = req.body;
+    if (!targetUrl) {
+      return res.status(400).json({ error: 'Proporciona la URL objetivo a extraer.' });
+    }
+
+    const result = await scrapeAndImportProfile(targetUrl, city || 'Santo Domingo', gender || 'FEMALE');
+    return res.json(result);
+  } catch (err) {
+    console.error('Error en scrape-profile:', err);
+    return res.status(500).json({ error: err.message || 'Error durante el proceso de extracción.' });
+  }
 });
 
 // Get all escorts for admin dashboard

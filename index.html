@@ -427,6 +427,14 @@
 			border-top-right-radius: 24px;
 		}
 
+		/* High Contrast Modal Title */
+		#escortModal .modal-title, 
+		#escortModal .modal-header h5, 
+		#escortModal h5, 
+		#escortModal h4 {
+			color: #FFFFFF !important;
+		}
+
 		/* LIGHTBOX MODAL OVERLAY */
 		#lightboxOverlay {
 			position: fixed;
@@ -802,7 +810,7 @@
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content bg-dark text-white rounded-4 border-secondary">
 				<div class="modal-header border-secondary pb-2">
-					<h5 class="modal-title font-w700" id="modalEscortName">Perfil VIP</h5>
+					<h5 class="modal-title font-w700 text-white" id="modalEscortName">Perfil VIP</h5>
 					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 				</div>
 				<div class="modal-body p-4" id="modalEscortBody">
@@ -1310,7 +1318,7 @@
 				if (!escort) return;
 				const hasStories = escort.stories && escort.stories.length > 0;
 				const verifiedBadge = escort.isVerified ? '<span class="badge bg-primary ms-2"><i class="fa-solid fa-check me-1"></i> Verificado</span>' : '';
-				document.getElementById('modalEscortName').innerHTML = `${escort.name}, ${escort.age} ${verifiedBadge}`;
+				document.getElementById('modalEscortName').innerHTML = `<span class="text-white font-w700">${escort.name}, ${escort.age}</span> ${verifiedBadge}`;
 				
 				const allMedia = [];
 				if (escort.avatarUrl) {

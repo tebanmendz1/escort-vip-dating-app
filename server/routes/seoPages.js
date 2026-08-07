@@ -198,7 +198,18 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
 
 	<footer class="bg-dark border-top border-secondary py-4 text-center text-white-50 font-13">
 		<div class="container">
-			<p>© 2026 CitasRD.app - Todos los derechos reservados. Sitio para mayores de 18 años.</p>
+			<div class="d-flex flex-wrap justify-content-center gap-3 mb-3 font-13 font-w600">
+				<a href="${baseUrl}/terms.html" class="text-white-50 text-decoration-none">Términos de Servicio</a>
+				<span>•</span>
+				<a href="${baseUrl}/privacy.html" class="text-white-50 text-decoration-none">Política de Privacidad</a>
+				<span>•</span>
+				<a href="${baseUrl}/cookies.html" class="text-white-50 text-decoration-none">Cookies</a>
+				<span>•</span>
+				<a href="${baseUrl}/2257.html" class="text-white-50 text-decoration-none">18 U.S.C. 2257</a>
+				<span>•</span>
+				<a href="${baseUrl}/contact.html" class="text-white-50 text-decoration-none">Contacto</a>
+			</div>
+			<p class="mb-0">© 2026 CitasRD.app - Todos los derechos reservados. Sitio para mayores de 18 años.</p>
 		</div>
 	</footer>
 </body>

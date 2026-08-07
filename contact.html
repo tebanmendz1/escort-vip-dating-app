@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<title>Contacto y Soporte | CitasRD.app</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta name="theme-color" content="#FF2A7A">
+	<link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.png">
+	<link rel="stylesheet" class="main-css" type="text/css" href="assets/css/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+	<style>
+		body { background: #08090E; color: #E2E8F0; font-family: 'Poppins', sans-serif; }
+		.legal-card { background: #141523; border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 32px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+		h1, h2, h3, h4 { color: #fff; font-family: 'Outfit', sans-serif; font-weight: 700; }
+		.contact-channel-card {
+			background: #18192B;
+			border: 1px solid rgba(255,255,255,0.14);
+			border-radius: 20px;
+			padding: 24px;
+			transition: all 0.25s ease;
+			height: 100%;
+		}
+		.contact-channel-card:hover {
+			border-color: #FF2A7A;
+			transform: translateY(-4px);
+			box-shadow: 0 10px 25px rgba(255,42,122,0.25);
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container py-4">
+
+		<div class="d-flex justify-content-between align-items-center mb-4">
+			<a href="index.html" class="btn btn-outline-light btn-sm rounded-pill font-w600">
+				<i class="fa-solid fa-arrow-left me-1"></i> Volver al Sitio
+			</a>
+			<span class="text-primary font-w700" style="letter-spacing: 1px;">CITASRD.APP CONTACTO</span>
+		</div>
+
+		<div class="legal-card mb-4">
+			<h1 class="font-w800 mb-2 text-white">Atención al Cliente y Contacto</h1>
+			<p class="text-white-50 font-14 mb-4">¿Tienes dudas sobre los planes VIP, necesitas asistencia técnica o deseas realizar un reporte?</p>
+
+			<div class="row g-3 mb-4">
+				<!-- Canal 1: WhatsApp -->
+				<div class="col-12 col-md-6">
+					<div class="contact-channel-card">
+						<div class="d-flex align-items-center gap-3 mb-3">
+							<div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+								<i class="fa-brands fa-whatsapp"></i>
+							</div>
+							<div>
+								<h5 class="text-white font-w700 mb-0">Soporte WhatsApp 24/7</h5>
+								<small class="text-white-50 font-12">Atención inmediata para escorts y VIP</small>
+							</div>
+						</div>
+						<p class="text-white-50 font-13 mb-3">Ponte en contacto directo con nuestro equipo administrativo para activación rápida de destacados y dudas.</p>
+						<a href="https://wa.me/18095550199?text=Hola%20Administrador,%20tengo%20una%20consulta%20sobre%20CitasRD.app" target="_blank" class="btn btn-success w-100 py-2.5 rounded-pill font-w700 font-14">
+							<i class="fa-brands fa-whatsapp me-1"></i> Chatear por WhatsApp
+						</a>
+					</div>
+				</div>
+
+				<!-- Canal 2: Email Moderación -->
+				<div class="col-12 col-md-6">
+					<div class="contact-channel-card">
+						<div class="d-flex align-items-center gap-3 mb-3">
+							<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 24px;">
+								<i class="fa-solid fa-envelope"></i>
+							</div>
+							<div>
+								<h5 class="text-white font-w700 mb-0">Correo Electrónico</h5>
+								<small class="text-white-50 font-12">Soporte técnico y asuntos legales</small>
+							</div>
+						</div>
+						<p class="text-white-50 font-13 mb-3">Escríbenos directamente para solicitar cambios de datos, reporte de fotos o soporte administrativo.</p>
+						<a href="mailto:soporte@citasrd.app" class="btn btn-outline-primary w-100 py-2.5 rounded-pill font-w700 font-14 text-white" style="border-color: #FF2A7A;">
+							<i class="fa-solid fa-paper-plane me-1"></i> enviar correo a soporte@citasrd.app
+						</a>
+					</div>
+				</div>
+			</div>
+
+			<!-- Formulario de Mensaje -->
+			<div class="p-4 bg-dark rounded-4 border border-secondary mt-4">
+				<h4 class="text-white font-w700 mb-3"><i class="fa-solid fa-message text-primary me-2"></i> Envíanos un Mensaje Directo</h4>
+				
+				<div id="contactFormAlert" class="alert alert-success d-none font-w600 mb-3"></div>
+
+				<form id="contactForm">
+					<div class="row">
+						<div class="col-12 col-md-6 mb-3">
+							<label class="form-label text-white font-w600">Nombre o Alias *</label>
+							<input type="text" class="form-control" id="contactName" required placeholder="Tu nombre">
+						</div>
+						<div class="col-12 col-md-6 mb-3">
+							<label class="form-label text-white font-w600">Correo Electrónico *</label>
+							<input type="email" class="form-control" id="contactEmail" required placeholder="tuemail@ejemplo.com">
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label text-white font-w600">Asunto *</label>
+						<select class="form-select" id="contactSubject">
+							<option value="Soporte Planes VIP">Soporte / Activación de Planes VIP</option>
+							<option value="Duda General">Consulta General</option>
+							<option value="Reporte Contenido">Reporte de Contenido / Moderación</option>
+							<option value="Problema Tecnico">Problema Técnico en la Plataforma</option>
+						</select>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label text-white font-w600">Mensaje *</label>
+						<textarea class="form-control" id="contactMessage" rows="4" required placeholder="Escribe tu consulta aquí..."></textarea>
+					</div>
+
+					<button type="submit" class="btn btn-primary w-100 py-3 font-w700 rounded-pill" style="background: var(--primary-gradient);">
+						🚀 Enviar Mensaje
+					</button>
+				</form>
+			</div>
+
+			<div class="mt-5 pt-3 border-top border-secondary text-center text-white-50 font-13">
+				<p>© 2026 CitasRD.app. Todos los derechos reservados.</p>
+			</div>
+		</div>
+
+	</div>
+
+	<script>
+		document.getElementById('contactForm').addEventListener('submit', (e) => {
+			e.preventDefault();
+			const alert = document.getElementById('contactFormAlert');
+			alert.textContent = '¡Gracias por contactarnos! Tu mensaje ha sido recibido por nuestro equipo de atención y te responderemos en breve.';
+			alert.classList.remove('d-none');
+			e.target.reset();
+		});
+	</script>
+</body>
+</html>

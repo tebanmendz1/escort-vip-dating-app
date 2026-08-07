@@ -133,7 +133,7 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
 }
 
 /**
- * Extractor especializado de Fotos para Skokka
+ * Extractor especializado de Fotos para Skokka (Escaneo exhaustivo multi-pase)
  */
 function extractSkokkaPhotos(html, targetUrl) {
   const photos = [];
@@ -141,13 +141,14 @@ function extractSkokkaPhotos(html, targetUrl) {
   function pushPhoto(url) {
     if (!url || typeof url !== 'string') return;
     let clean = url.replace(/\\/g, '').replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
-    
-    const urlMatch = clean.match(/(https?:\/\/[^\s"'<>]+(?:\.jpg|\.png|\.jpeg|\.webp)[^\s"'<>]*)/i);
+
+    if (clean.startsWith('//')) clean = `https:${clean}`;
+    if (clean.startsWith('/image/')) clean = `https://do.skokka.com${clean}`;
+
+    const urlMatch = clean.match(/(https?:\/\/[^\s"'<>]+(?:\.jpg|\.png|\.jpeg|\.webp)[^\s"'<>]*)/i) || clean.match(/(https?:\/\/[^\s"'<>]*skokka[^\s"'<>]*\/image\/post\/[^\s"'<>]*)/i);
     if (urlMatch) {
       clean = urlMatch[1];
     }
-
-    if (clean.startsWith('//')) clean = `https:${clean}`;
 
     const lower = clean.toLowerCase();
     if (
@@ -156,7 +157,8 @@ function extractSkokkaPhotos(html, targetUrl) {
       lower.includes('favicon') ||
       lower.includes('svg') ||
       lower.includes('blank.gif') ||
-      lower.includes('loader')
+      lower.includes('loader') ||
+      lower.includes('avatar')
     ) {
       return;
     }
@@ -167,31 +169,62 @@ function extractSkokkaPhotos(html, targetUrl) {
   }
 
   const decodedHtml = html.replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
+  const $ = cheerio.load(decodedHtml);
 
-  // 1. Extraer de <post-gallery :items="[...]"> de Skokka
-  const postGalleryMatch = decodedHtml.match(/:items="(\[.*?\])"/s) || decodedHtml.match(/items:\s*(\[.*?\])/s);
-  if (postGalleryMatch) {
-    const rawItems = postGalleryMatch[1];
-    const imgMatches = rawItems.match(/https?:\/\/[^\s"'<>]+(?:\.jpg|\.png|\.jpeg|\.webp)/gi);
-    if (imgMatches) {
-      imgMatches.forEach(img => pushPhoto(img));
+  // 1. Escanear todos los elementos HTML <img>, <source>, <a>, data-src, data-original
+  $('img, source, a').each((i, el) => {
+    pushPhoto($(el).attr('src'));
+    pushPhoto($(el).attr('data-src'));
+    pushPhoto($(el).attr('data-original'));
+    pushPhoto($(el).attr('data-lazy'));
+    pushPhoto($(el).attr('href'));
+    const srcset = $(el).attr('srcset');
+    if (srcset) {
+      srcset.split(',').forEach(s => pushPhoto(s.trim().split(' ')[0]));
     }
-  }
+  });
 
-  // 2. Metatag og:image
-  const $ = cheerio.load(html);
-  $('meta[property="og:image"], meta[name="og:image"]').each((i, el) => {
+  // 2. Metatags OpenGraph y Twitter
+  $('meta[property="og:image"], meta[name="og:image"], meta[name="twitter:image"]').each((i, el) => {
     pushPhoto($(el).attr('content'));
   });
 
-  // 3. URLs de Skokka / CDN
-  const skokkaPattern = /(https?:\/\/do\.skokka\.com\/image\/post\/[^\s"'<>\)\\]+)/gi;
+  // 3. Extracción de JSON / JSON-LD Schema
+  $('script[type="application/ld+json"]').each((i, el) => {
+    try {
+      const data = JSON.parse($(el).html());
+      if (data && data.image) {
+        if (Array.isArray(data.image)) data.image.forEach(img => pushPhoto(img));
+        else pushPhoto(data.image);
+      }
+    } catch(e) {}
+  });
+
+  // 4. Bloques Vue :items o arrays javascript
+  const vueMatches = decodedHtml.match(/(\[.*?\])/gs);
+  if (vueMatches) {
+    vueMatches.forEach(block => {
+      if (block.includes('http') && (block.includes('image') || block.includes('jpg') || block.includes('png') || block.includes('webp'))) {
+        const imgs = block.match(/https?:\/\/[^\s"'<>]+(?:\.jpg|\.png|\.jpeg|\.webp)[^\s"'<>]*/gi);
+        if (imgs) imgs.forEach(img => pushPhoto(img));
+      }
+    });
+  }
+
+  // 5. Patrón universal de imágenes CDN Skokka
+  const skokkaPattern = /(https?:\/\/[^\s"'<>]*(?:skokka|cdn|image|post)[^\s"'<>]*\/image\/post\/[^\s"'<>\)\\]+)/gi;
   let match;
   while ((match = skokkaPattern.exec(decodedHtml)) !== null) {
     pushPhoto(match[1]);
   }
 
-  return photos.slice(0, 10);
+  // 6. Patrón genérico de imágenes de alta resolución
+  const genericPhotoPattern = /(https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp))/gi;
+  while ((match = genericPhotoPattern.exec(decodedHtml)) !== null) {
+    pushPhoto(match[1]);
+  }
+
+  return photos.slice(0, 15);
 }
 
 /**

@@ -11,7 +11,8 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
 	
-	<!-- PayPal Smart SDK with Guest Card Checkout Support -->
+	<!-- Bootstrap 5 Bundle JS & PayPal Smart SDK -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD&enable-funding=card"></script>
 	<style>
 		:root {
@@ -346,7 +347,7 @@
 					<div class="modal-content" style="background: #141523; border: 1px solid rgba(255, 42, 122, 0.5); border-radius: 24px; color: #fff;">
 						<div class="modal-header border-bottom border-secondary">
 							<h5 class="modal-title font-w800"><i class="fa-solid fa-wallet text-primary me-2"></i> Pasarela de Pago VIP Híbrida</h5>
-							<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+							<button type="button" class="btn-close btn-close-white" onclick="closeHybridModal()" data-bs-dismiss="modal"></button>
 						</div>
 						<div class="modal-body p-4">
 							
@@ -891,29 +892,81 @@
 		let selectedPlanData = { name: '', priceDop: 0, priceUsd: 0 };
 
 		window.requestVipPlan = (planName, priceDop, priceUsd) => {
+			console.log('requestVipPlan accionado:', planName, priceDop, priceUsd);
 			selectedPlanData = { name: planName, priceDop, priceUsd };
 
 			const refCode = `VIP-${Math.floor(1000 + Math.random() * 9000)}`;
-			document.getElementById('uniqueRefCode').textContent = refCode;
+			const refEl = document.getElementById('uniqueRefCode');
+			if (refEl) refEl.textContent = refCode;
 
-			document.getElementById('hybridPlanName').textContent = `Plan VIP ${planName}`;
-			document.getElementById('hybridPlanPriceDop').textContent = `RD$ ${priceDop.toLocaleString()}`;
-			document.getElementById('hybridPlanPriceUsd').textContent = `aprox. $${priceUsd.toFixed(2)} USD`;
+			const nameEl = document.getElementById('hybridPlanName');
+			if (nameEl) nameEl.textContent = `Plan VIP ${planName}`;
+
+			const priceDopEl = document.getElementById('hybridPlanPriceDop');
+			if (priceDopEl) priceDopEl.textContent = `RD$ ${priceDop.toLocaleString()}`;
+
+			const priceUsdEl = document.getElementById('hybridPlanPriceUsd');
+			if (priceUsdEl) priceUsdEl.textContent = `aprox. $${priceUsd.toFixed(2)} USD`;
 
 			const escortName = currentEscortProfile ? currentEscortProfile.name : 'Modelo Escort';
 			const waText = encodeURIComponent(`Hola Administrador, realicé el pago/transferencia para la Promoción VIP de mi perfil en escortsvip.do.\n\n✨ Plan Seleccionado: ${planName} (RD$ ${priceDop})\n🆔 Código de Referencia: ${refCode}\n👤 Nombre del Perfil: ${escortName}`);
 			
-			document.getElementById('btnConfirmLbtrWhatsapp').onclick = () => {
-				window.open(`https://wa.me/18095551234?text=${waText}`, '_blank');
-			};
+			const btnWa = document.getElementById('btnConfirmLbtrWhatsapp');
+			if (btnWa) {
+				btnWa.onclick = () => {
+					window.open(`https://wa.me/18095551234?text=${waText}`, '_blank');
+				};
+			}
 
-			document.getElementById('cryptoPaymentBtn').href = `https://nowpayments.io/payment/?iid=${refCode}&amount=${priceUsd}`;
+			const btnCrypto = document.getElementById('cryptoPaymentBtn');
+			if (btnCrypto) {
+				btnCrypto.href = `https://nowpayments.io/payment/?iid=${refCode}&amount=${priceUsd}`;
+			}
 
 			renderPayPalSmartButtons(priceUsd, planName);
 
 			const modalElement = document.getElementById('hybridCheckoutModal');
-			const modal = new bootstrap.Modal(modalElement);
-			modal.show();
+			if (modalElement) {
+				if (window.bootstrap && window.bootstrap.Modal) {
+					try {
+						const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+						modal.show();
+						return;
+					} catch(e) {
+						console.warn('Bootstrap modal fallback:', e);
+					}
+				}
+				// Fallback nativo 100% garantizado
+				modalElement.classList.add('show');
+				modalElement.style.display = 'block';
+				document.body.classList.add('modal-open');
+
+				let backdrop = document.getElementById('customModalBackdrop');
+				if (!backdrop) {
+					backdrop = document.createElement('div');
+					backdrop.id = 'customModalBackdrop';
+					backdrop.className = 'modal-backdrop fade show';
+					document.body.appendChild(backdrop);
+					backdrop.onclick = () => window.closeHybridModal();
+				}
+			}
+		};
+
+		window.closeHybridModal = () => {
+			const modalElement = document.getElementById('hybridCheckoutModal');
+			if (modalElement) {
+				if (window.bootstrap && window.bootstrap.Modal) {
+					try {
+						const inst = bootstrap.Modal.getInstance(modalElement);
+						if (inst) { inst.hide(); }
+					} catch(e) {}
+				}
+				modalElement.classList.remove('show');
+				modalElement.style.display = 'none';
+				document.body.classList.remove('modal-open');
+				const backdrop = document.getElementById('customModalBackdrop');
+				if (backdrop) backdrop.remove();
+			}
 		};
 
 		function renderPayPalSmartButtons(amountUsd, planName) {

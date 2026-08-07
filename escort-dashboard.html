@@ -211,10 +211,26 @@
 			border-radius: 25px;
 			transition: all 0.25s ease;
 		}
-		.mobile-pay-btn.active {
-			background: #FF2A7A !important;
+		/* Dashboard Quick Navigation Pill Bar */
+		.dash-tab-btn {
+			background: #18192B !important;
+			color: #CBD5E1 !important;
+			border: 1px solid rgba(255, 255, 255, 0.16) !important;
+			font-weight: 700 !important;
+			font-size: 13px !important;
+			padding: 10px 18px !important;
+			border-radius: 25px !important;
+			cursor: pointer !important;
+			transition: all 0.2s ease !important;
+			white-space: nowrap !important;
+			display: inline-flex !important;
+			align-items: center !important;
+		}
+		.dash-tab-btn.active, .dash-tab-btn:hover {
+			background: linear-gradient(135deg, #FF2A7A 0%, #E02875 100%) !important;
 			color: #FFFFFF !important;
-			box-shadow: 0 4px 15px rgba(255, 42, 122, 0.4);
+			border-color: #FF2A7A !important;
+			box-shadow: 0 4px 15px rgba(255, 42, 122, 0.4) !important;
 		}
 	</style>
 </head>
@@ -283,8 +299,35 @@
 				</div>
 			</div>
 
+			<!-- BOTONERA MÓVIL DE NAVEGACIÓN RÁPIDA -->
+			<div class="dashboard-nav-pills mb-4 overflow-auto py-1">
+				<div class="d-flex gap-2" style="white-space: nowrap;">
+					<button class="dash-tab-btn active" id="tabBtn-all" onclick="showDashboardTab('all')">
+						<i class="fa-solid fa-grip me-1"></i> Ver Todo
+					</button>
+					<button class="dash-tab-btn" id="tabBtn-promo" onclick="showDashboardTab('promo')">
+						<i class="fa-solid fa-crown text-warning me-1"></i> Destacar VIP
+					</button>
+					<button class="dash-tab-btn" id="tabBtn-stories" onclick="showDashboardTab('stories')">
+						<i class="fa-solid fa-circle-play text-primary me-1"></i> Historias 24h
+					</button>
+					<button class="dash-tab-btn" id="tabBtn-profile" onclick="showDashboardTab('profile')">
+						<i class="fa-solid fa-user-pen text-info me-1"></i> Editar Perfil
+					</button>
+					<button class="dash-tab-btn" id="tabBtn-gallery" onclick="showDashboardTab('gallery')">
+						<i class="fa-solid fa-images text-success me-1"></i> Galería
+					</button>
+					<button class="dash-tab-btn" id="tabBtn-tips" onclick="showDashboardTab('tips')">
+						<i class="fa-solid fa-lightbulb text-warning me-1"></i> Consejos
+					</button>
+					<button class="dash-tab-btn" id="tabBtn-security" onclick="showDashboardTab('security')">
+						<i class="fa-solid fa-lock text-danger me-1"></i> Contraseña
+					</button>
+				</div>
+			</div>
+
 			<!-- AVISO DE PROMOCIÓN & DESTACAR PERFIL VIP -->
-			<div class="dash-card position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, #1D1429 0%, #2D1229 100%) !important; border: 2px solid #FF2A7A !important; box-shadow: 0 10px 30px rgba(255, 42, 122, 0.25) !important;">
+			<div id="dash-sec-promo" class="dash-card position-relative overflow-hidden mb-4" style="background: linear-gradient(135deg, #1D1429 0%, #2D1229 100%) !important; border: 2px solid #FF2A7A !important; box-shadow: 0 10px 30px rgba(255, 42, 122, 0.25) !important;">
 				<div class="d-flex align-items-center justify-content-between mb-3">
 					<div>
 						<span class="badge bg-warning text-dark font-w800 px-3 py-2 rounded-pill mb-2 font-12"><i class="fa-solid fa-crown me-1"></i> PLANES DE PROMOCIÓN VIP</span>
@@ -425,7 +468,7 @@
 			</div>
 
 			<!-- PUBLICAR HISTORIA DE 24 HORAS -->
-			<div class="dash-card" style="border: 2px solid #FF2A7A !important;">
+			<div id="dash-sec-stories" class="dash-card" style="border: 2px solid #FF2A7A !important;">
 				<div class="d-flex align-items-center gap-2 mb-1">
 					<i class="fa-solid fa-circle-play text-primary font-24"></i>
 					<h5 class="dash-card-title mb-0">Publicar Historia de 24 Horas</h5>
@@ -454,7 +497,7 @@
 			</div>
 
 			<!-- SMART PROFILE COACH (Consejos Inteligentes) -->
-			<div class="dash-card">
+			<div id="dash-sec-tips" class="dash-card">
 				<h5 class="dash-card-title">
 					<i class="fa-solid fa-lightbulb text-warning me-2"></i> Consejos Inteligentes para Atraer más Clientes
 				</h5>
@@ -465,7 +508,7 @@
 			</div>
 
 			<!-- Profile Info Form High Contrast -->
-			<div class="dash-card">
+			<div id="dash-sec-profile" class="dash-card">
 				<h5 class="dash-card-title">Editar Información del Perfil</h5>
 				<p class="dash-card-sub">Mantén tus datos actualizados para mejorar tu posicionamiento.</p>
 
@@ -545,7 +588,7 @@
 			</div>
 
 			<!-- Gallery & Media Upload High Contrast -->
-			<div class="dash-card">
+			<div id="dash-sec-gallery" class="dash-card">
 				<h5 class="dash-card-title">Galería de Fotos y Videos</h5>
 				<p class="dash-card-sub">La plataforma aplicará automáticamente la marca de agua <strong>ESCORT VIP</strong> a tus fotografías.</p>
 
@@ -567,7 +610,7 @@
 			</div>
 
 			<!-- Cambiar Contraseña Card -->
-			<div class="dash-card">
+			<div id="dash-sec-security" class="dash-card">
 				<h5 class="dash-card-title"><i class="fa-solid fa-key text-warning me-2"></i> Cambiar Contraseña</h5>
 				<p class="dash-card-sub">Actualiza tu clave de acceso de manera segura.</p>
 				<div id="passAlert" class="alert d-none font-w600 mb-3"></div>
@@ -1024,6 +1067,31 @@
 				btnLbtr.classList.remove('active');
 				viewCard.classList.remove('d-none');
 				viewLbtr.classList.add('d-none');
+			}
+		window.showDashboardTab = (tabName) => {
+			const allTabs = ['promo', 'stories', 'tips', 'profile', 'gallery', 'security'];
+			
+			document.querySelectorAll('.dash-tab-btn').forEach(btn => btn.classList.remove('active'));
+			const activeBtn = document.getElementById(`tabBtn-${tabName}`);
+			if (activeBtn) activeBtn.classList.add('active');
+
+			if (tabName === 'all') {
+				allTabs.forEach(t => {
+					const sec = document.getElementById(`dash-sec-${t}`);
+					if (sec) sec.classList.remove('d-none');
+				});
+			} else {
+				allTabs.forEach(t => {
+					const sec = document.getElementById(`dash-sec-${t}`);
+					if (sec) {
+						if (t === tabName) {
+							sec.classList.remove('d-none');
+							sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						} else {
+							sec.classList.add('d-none');
+						}
+					}
+				});
 			}
 		};
 

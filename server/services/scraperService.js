@@ -370,28 +370,53 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   }
   let cleanBio = rawBio.substring(0, 400) || `Hola amor, recién llegada. Escríbeme y disfruta conmigo una noche inolvidable en ${city}.`;
 
-  // 6. Extraer Secciones Estructuradas (:hierarchy JSON)
+  // 6. Extraer Secciones Estructuradas (Servicios, A quién atiendes, Lugar, Métodos de Pago, Características)
   let extractedServices = [];
   let attentionTo = [];
   let placeOfService = [];
   let paymentMethods = [];
   let aboutYou = [];
 
+  // A) Extracción Directa desde Elementos DOM HTML (.tags-list-detail, .tags-sections-detail)
+  $('.tags-list-detail').each((i, el) => {
+    const titleText = $(el).find('h5, strong').text().trim().toLowerCase();
+    const tags = [];
+    $(el).find('.badge, .badge-pill, span').each((j, tagEl) => {
+      const tagVal = $(tagEl).text().trim();
+      if (tagVal && !tags.includes(tagVal)) tags.push(tagVal);
+    });
+
+    if (tags.length > 0) {
+      if (titleText.includes('servicio')) {
+        extractedServices.push(...tags);
+      } else if (titleText.includes('quien') || titleText.includes('atiend')) {
+        attentionTo.push(...tags);
+      } else if (titleText.includes('lugar') || titleText.includes('encuentro')) {
+        placeOfService.push(...tags);
+      } else if (titleText.includes('pago') || titleText.includes('método') || titleText.includes('metodo')) {
+        paymentMethods.push(...tags);
+      } else {
+        aboutYou.push(...tags);
+      }
+    }
+  });
+
+  // B) Fallback: Extracción desde atributo :hierarchy JSON si el DOM HTML no contenía las clases
   const hierarchyMatch = html.match(/:hierarchy='(.*?)'/s) || html.match(/:hierarchy="(.*?)"/s);
   if (hierarchyMatch) {
     try {
       const hierarchyData = JSON.parse(hierarchyMatch[1]);
       if (hierarchyData && hierarchyData.sections) {
         hierarchyData.sections.forEach(sec => {
-          if (sec.code === 'services' && sec.tags) {
+          if (sec.code === 'services' && sec.tags && extractedServices.length === 0) {
             extractedServices = sec.tags.map(t => t.title);
-          } else if (sec.code === 'attention_to' && sec.tags) {
+          } else if (sec.code === 'attention_to' && sec.tags && attentionTo.length === 0) {
             attentionTo = sec.tags.map(t => t.title);
-          } else if (sec.code === 'place_of_service' && sec.tags) {
+          } else if (sec.code === 'place_of_service' && sec.tags && placeOfService.length === 0) {
             placeOfService = sec.tags.map(t => t.title);
-          } else if (sec.code === 'payment_methods' && sec.tags) {
+          } else if (sec.code === 'payment_methods' && sec.tags && paymentMethods.length === 0) {
             paymentMethods = sec.tags.map(t => t.title);
-          } else if (sec.code === 'section_about_you' && sec.tags) {
+          } else if (sec.code === 'section_about_you' && sec.tags && aboutYou.length === 0) {
             aboutYou = sec.tags.map(t => t.title);
           }
         });

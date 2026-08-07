@@ -12,8 +12,11 @@ const DATA_FILE = path.join(DATA_DIR, 'data_store.json');
 let prisma = null;
 try {
   prisma = new PrismaClient();
+  if (process.env.DATABASE_URL) {
+    console.log(`[DB] Conectando a Base de Datos con DATABASE_URL: ${process.env.DATABASE_URL.split('@').pop()}`);
+  }
 } catch (e) {
-  console.warn('Prisma client fallback:', e.message);
+  console.warn('[DB] Prisma client fallback a JSON:', e.message);
 }
 
 function loadJsonStore() {

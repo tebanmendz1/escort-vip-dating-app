@@ -3,8 +3,8 @@ import { db } from './db.js';
 
 export async function seedInitialData() {
   const existing = await db.getEscorts();
-  if (existing && existing.length >= 6) {
-    console.log(`Base de datos ya contiene ${existing.length} perfiles de escorts.`);
+  if (existing && existing.length > 0) {
+    console.log(`Base de datos ya contiene ${existing.length} perfiles de escorts. Omitiendo seed inicial.`);
     return;
   }
 

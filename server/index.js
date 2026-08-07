@@ -30,6 +30,15 @@ app.use(compression());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// 301 Domain Canonicalization Redirect (citasrd.app -> www.citasrd.app)
+app.use((req, res, next) => {
+  const host = req.headers.host;
+  if (host === 'citasrd.app') {
+    return res.redirect(301, `https://www.citasrd.app${req.url}`);
+  }
+  next();
+});
+
 // Serve static uploads & assets with 7 days browser caching for high performance
 const uploadsDir = process.env.UPLOADS_DIR || (fs.existsSync('/data/uploads') ? '/data/uploads' : path.join(__dirname, 'uploads'));
 if (!fs.existsSync(uploadsDir)) {

@@ -776,7 +776,7 @@
 
 			<!-- Tarifa Máxima por Hora -->
 			<div class="mb-3">
-				<label class="form-label font-w600 text-light">Tarifa Máxima (RD$ DOP/hr)</label>
+				<label class="form-label font-w600 text-light">Tarifa Máxima (RD$ /hr)</label>
 				<input type="number" id="filterMaxRate" class="form-control bg-dark text-white border-secondary" placeholder="Ej. 5000">
 			</div>
 
@@ -1008,7 +1008,7 @@
 					<span class="featured-badge-star">⭐ VIP</span>
 					<div class="featured-overlay">
 						<h6 class="featured-name">${escort.name}</h6>
-						<small class="text-warning font-11 font-w700">RD$ ${escort.hourlyRate} DOP</small>
+						<small class="text-warning font-11 font-w700">RD$ ${escort.hourlyRate}</small>
 					</div>
 				`;
 				container.appendChild(card);
@@ -1065,7 +1065,7 @@
 						</div>
 						<div class="d-flex justify-content-between align-items-end mb-1">
 							<h2 class="escort-profile-title">${escort.name}, ${escort.age}</h2>
-							<div class="escort-rate-tag">RD$ ${escort.hourlyRate} <small class="font-12 text-white opacity-75">DOP/hr</small></div>
+							<div class="escort-rate-tag">RD$ ${escort.hourlyRate} <small class="font-12 text-white opacity-75">/hr</small></div>
 						</div>
 						<div class="text-light font-14 mb-1">
 							<i class="fa-solid fa-location-dot text-primary me-1"></i> ${escort.city} ${escort.zone ? '• ' + escort.zone : ''}
@@ -1113,7 +1113,7 @@
 							<h4 class="badoo-name">${escort.name}, ${escort.age} ${verifiedIcon}</h4>
 						</div>
 						<div class="badoo-meta mb-1"><i class="fa-solid fa-location-dot me-1"></i>${escort.city} • ${escort.nationality || 'Dominicana'}</div>
-						<div class="badoo-price">RD$ ${escort.hourlyRate} DOP/hr</div>
+						<div class="badoo-price">RD$ ${escort.hourlyRate} /hr</div>
 					</div>
 				`;
 				container.appendChild(card);
@@ -1348,7 +1348,7 @@
 						<div class="row text-center">
 							<div class="col-4 border-end border-secondary">
 								<span class="text-white-50 font-11 d-block">Tarifa</span>
-								<strong class="font-16 text-primary">RD$ ${escort.hourlyRate} DOP</strong>
+								<strong class="font-16 text-primary">RD$ ${escort.hourlyRate}</strong>
 							</div>
 							<div class="col-4 border-end border-secondary">
 								<span class="text-white-50 font-11 d-block">Nacionalidad</span>

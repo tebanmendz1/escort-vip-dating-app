@@ -197,40 +197,85 @@
 
 			<!-- Section 3: Web Scraper Auto-Importer -->
 			<div id="sectionScraper" class="admin-card d-none">
-				<h5 class="font-w800 text-white mb-2"><i class="fa-solid fa-robot text-primary me-2"></i> Auto-Importador de Perfiles desde URLs Externas</h5>
-				<p class="text-white-50 font-14 mb-4">Ingresa la URL del perfil objetivo en otro sitio web. El sistema extraerá automáticamente el nombre, edad, WhatsApp, biografía e imágenes.</p>
+				<h5 class="font-w800 text-white mb-2"><i class="fa-solid fa-robot text-primary me-2"></i> Auto-Importador de Perfiles</h5>
+				<p class="text-white-50 font-14 mb-4">Puedes extraer perfiles por URL directa o pegando el código HTML del anuncio si el sitio objetivo utiliza protección Cloudflare (HTTP 403).</p>
 				
 				<div id="scraperAlert" class="alert d-none font-w600"></div>
 
-				<form id="scraperForm">
-					<div class="mb-3">
-						<label class="form-label font-w600">URL del Perfil Objetivo a Extraer *</label>
-						<input type="url" id="scrapeUrl" class="form-control" placeholder="https://sitio-externo-escorts.com/perfil-modelo" required>
-					</div>
+				<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+					<li class="nav-item">
+						<button class="nav-link active py-2 font-13 font-w600" id="pills-url-tab" data-bs-toggle="pill" data-bs-target="#pills-url" type="button">🔗 Por URL Directa</button>
+					</li>
+					<li class="nav-item">
+						<button class="nav-link py-2 font-13 font-w600" id="pills-html-tab" data-bs-toggle="pill" data-bs-target="#pills-html" type="button">📋 Pegar Código HTML (Bypass 403)</button>
+					</li>
+				</ul>
 
-					<div class="row">
-						<div class="col-md-6 mb-3">
-							<label class="form-label font-w600">Ciudad de Asignación *</label>
-							<select id="scrapeCity" class="form-select">
-								<option value="Santo Domingo">Santo Domingo 🇩🇴</option>
-								<option value="Santiago">Santiago 🇩🇴</option>
-								<option value="Punta Cana">Punta Cana 🇩🇴</option>
-							</select>
+				<!-- Modo 1: URL Directa -->
+				<div id="modeUrlSection">
+					<form id="scraperForm">
+						<div class="mb-3">
+							<label class="form-label font-w600">URL del Perfil Objetivo a Extraer *</label>
+							<input type="url" id="scrapeUrl" class="form-control" placeholder="https://sitio-externo.com/anuncio/modelo-123">
 						</div>
-						<div class="col-md-6 mb-3">
-							<label class="form-label font-w600">Género Asignado *</label>
-							<select id="scrapeGender" class="form-select">
-								<option value="FEMALE">Mujer</option>
-								<option value="MALE">Hombre</option>
-								<option value="TRANS">Trans</option>
-							</select>
-						</div>
-					</div>
 
-					<button type="submit" id="btnRunScraper" class="btn btn-primary py-3 px-4 font-w700 rounded-pill" style="background: var(--primary-gradient);">
-						<i class="fa-solid fa-cloud-arrow-down me-2"></i> Extraer e Importar Perfil Ahora
-					</button>
-				</form>
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label class="form-label font-w600">Ciudad de Asignación *</label>
+								<select id="scrapeCity" class="form-select">
+									<option value="Santo Domingo">Santo Domingo 🇩🇴</option>
+									<option value="Santiago">Santiago 🇩🇴</option>
+									<option value="Punta Cana">Punta Cana 🇩🇴</option>
+								</select>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label class="form-label font-w600">Género Asignado *</label>
+								<select id="scrapeGender" class="form-select">
+									<option value="FEMALE">Mujer</option>
+									<option value="MALE">Hombre</option>
+									<option value="TRANS">Trans</option>
+								</select>
+							</div>
+						</div>
+
+						<button type="submit" id="btnRunScraper" class="btn btn-primary py-3 px-4 font-w700 rounded-pill" style="background: var(--primary-gradient);">
+							<i class="fa-solid fa-cloud-arrow-down me-2"></i> Extraer por URL
+						</button>
+					</form>
+				</div>
+
+				<!-- Modo 2: Pegar HTML Directo -->
+				<div id="modeHtmlSection" class="d-none">
+					<form id="scraperHtmlForm">
+						<div class="mb-3">
+							<label class="form-label font-w600">Pega el Código HTML del Anuncio (Ctrl+U en la página del anuncio -> Copiar Todo) *</label>
+							<textarea id="scrapeHtmlContent" class="form-control font-mono" rows="6" placeholder="<!DOCTYPE html>... pega aquí el código HTML..."></textarea>
+						</div>
+
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label class="form-label font-w600">Ciudad de Asignación *</label>
+								<select id="scrapeHtmlCity" class="form-select">
+									<option value="Santo Domingo">Santo Domingo 🇩🇴</option>
+									<option value="Santiago">Santiago 🇩🇴</option>
+									<option value="Punta Cana">Punta Cana 🇩🇴</option>
+								</select>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label class="form-label font-w600">Género Asignado *</label>
+								<select id="scrapeHtmlGender" class="form-select">
+									<option value="FEMALE">Mujer</option>
+									<option value="MALE">Hombre</option>
+									<option value="TRANS">Trans</option>
+								</select>
+							</div>
+						</div>
+
+						<button type="submit" id="btnRunHtmlScraper" class="btn btn-success py-3 px-4 font-w700 rounded-pill">
+							<i class="fa-solid fa-file-import me-2"></i> Procesar e Importar HTML
+						</button>
+					</form>
+				</div>
 
 				<div id="scraperLogBox" class="mt-4 p-3 bg-dark text-white font-mono rounded d-none" style="font-size: 13px; max-height: 200px; overflow-y: auto;"></div>
 			</div>
@@ -430,7 +475,22 @@
 			}
 		});
 
-		// Scraper Submit Form Handler
+		// Mode Switcher Pills
+		document.getElementById('pills-url-tab').addEventListener('click', () => {
+			document.getElementById('modeUrlSection').classList.remove('d-none');
+			document.getElementById('modeHtmlSection').classList.add('d-none');
+			document.getElementById('pills-url-tab').classList.add('active');
+			document.getElementById('pills-html-tab').classList.remove('active');
+		});
+
+		document.getElementById('pills-html-tab').addEventListener('click', () => {
+			document.getElementById('modeHtmlSection').classList.remove('d-none');
+			document.getElementById('modeUrlSection').classList.add('d-none');
+			document.getElementById('pills-html-tab').classList.add('active');
+			document.getElementById('pills-url-tab').classList.remove('active');
+		});
+
+		// Scraper Submit Form Handler (URL)
 		document.getElementById('scraperForm').addEventListener('submit', async (e) => {
 			e.preventDefault();
 			const targetUrl = document.getElementById('scrapeUrl').value.trim();
@@ -459,6 +519,46 @@
 				alertBox.classList.remove('d-none');
 				logBox.innerHTML += `<div class="text-success">[ÉXITO] Perfil registrado con ID: ${data.escort.id}</div>`;
 				document.getElementById('scrapeUrl').value = '';
+				loadEscortsTable();
+			} catch (err) {
+				alertBox.textContent = err.message;
+				alertBox.className = 'alert alert-danger font-w600';
+				alertBox.classList.remove('d-none');
+				logBox.innerHTML += `<div class="text-danger">[ERROR] ${err.message}</div>`;
+			} finally {
+				btn.disabled = false;
+			}
+		});
+
+		// Scraper Submit Form Handler (HTML Direct Paste - Bypass 403)
+		document.getElementById('scraperHtmlForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const html = document.getElementById('scrapeHtmlContent').value.trim();
+			const city = document.getElementById('scrapeHtmlCity').value;
+			const gender = document.getElementById('scrapeHtmlGender').value;
+			const alertBox = document.getElementById('scraperAlert');
+			const logBox = document.getElementById('scraperLogBox');
+			const btn = document.getElementById('btnRunHtmlScraper');
+
+			alertBox.classList.add('d-none');
+			logBox.classList.remove('d-none');
+			logBox.innerHTML = `<div>[INFO] Procesando código HTML pegado...</div>`;
+			btn.disabled = true;
+
+			try {
+				const res = await fetch('/api/admin/scrape-html', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+					body: JSON.stringify({ html, city, gender })
+				});
+				const data = await res.json();
+				if (!res.ok) throw new Error(data.error || 'Error al procesar HTML');
+
+				alertBox.textContent = `¡Éxito Bypass! Perfil "${data.escort.name}" extraído e importado correctamente con ${data.importedPhotosCount} fotos.`;
+				alertBox.className = 'alert alert-success font-w600';
+				alertBox.classList.remove('d-none');
+				logBox.innerHTML += `<div class="text-success">[ÉXITO BYPASS] Perfil registrado con ID: ${data.escort.id}</div>`;
+				document.getElementById('scrapeHtmlContent').value = '';
 				loadEscortsTable();
 			} catch (err) {
 				alertBox.textContent = err.message;

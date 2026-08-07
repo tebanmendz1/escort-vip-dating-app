@@ -1,7 +1,7 @@
 import express from 'express';
 import { db } from '../db.js';
 import { generateToken, authenticateToken } from '../middleware/auth.js';
-import { scrapeAndImportProfile } from '../services/scraperService.js';
+import { scrapeAndImportProfile, parseAndSaveProfileFromHtml } from '../services/scraperService.js';
 
 const router = express.Router();
 
@@ -41,7 +41,7 @@ router.post('/change-password', requireAdmin, (req, res) => {
   return res.json({ success: true, message: 'Contraseña del Administrador actualizada con éxito.' });
 });
 
-// Endpoint de Scraper / Auto-Importador para Admin
+// Endpoint de Scraper por URL objetivo
 router.post('/scrape-profile', requireAdmin, async (req, res) => {
   try {
     const { targetUrl, city, gender } = req.body;
@@ -54,6 +54,22 @@ router.post('/scrape-profile', requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('Error en scrape-profile:', err);
     return res.status(500).json({ error: err.message || 'Error durante el proceso de extracción.' });
+  }
+});
+
+// Endpoint de Scraper por Pegado de HTML Directo (Bypass 403 Cloudflare)
+router.post('/scrape-html', requireAdmin, async (req, res) => {
+  try {
+    const { html, city, gender } = req.body;
+    if (!html || html.length < 50) {
+      return res.status(400).json({ error: 'Proporciona el código HTML del anuncio.' });
+    }
+
+    const result = await parseAndSaveProfileFromHtml(html, 'https://do.skokka.com', city || 'Santo Domingo', gender || 'FEMALE');
+    return res.json(result);
+  } catch (err) {
+    console.error('Error en scrape-html:', err);
+    return res.status(500).json({ error: err.message || 'Error durante la importación de HTML.' });
   }
 });
 

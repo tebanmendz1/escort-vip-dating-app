@@ -10,48 +10,39 @@ import { db } from '../db.js';
  * Genera un Watermark SVG colocado estratégicamente en el CENTRO de la imagen (donde Skokka estampa su logo)
  */
 function createWatermarkSvg(width, height) {
-  const fontSize = Math.max(16, Math.floor(width * 0.048));
-  const svgWidth = Math.floor(width * 0.72);
-  const svgHeight = Math.floor(fontSize * 2.6);
+  const fontSize = Math.max(18, Math.floor(width * 0.052));
+  const svgWidth = Math.floor(width * 0.78);
+  const svgHeight = Math.floor(fontSize * 2.5);
 
   // Posición CENTRAL exacta donde Skokka coloca su logo
   const centerX = Math.floor((width - svgWidth) / 2);
   const centerY = Math.floor((height - svgHeight) / 2);
 
+  const iconSize = Math.floor(fontSize * 1.1);
+  const iconY = Math.floor((svgHeight - iconSize) / 2);
+
   return `
     <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-          <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.8"/>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.9"/>
         </filter>
+        <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FF2A7A"/>
+          <stop offset="100%" stop-color="#FF758C"/>
+        </linearGradient>
       </defs>
-      <style>
-        .watermark-pill {
-          fill: rgba(12, 12, 20, 0.92);
-          stroke: #FF2A7A;
-          stroke-width: 2.5px;
-          rx: 20px;
-          ry: 20px;
-          filter: url(#shadow);
-        }
-        .watermark-text {
-          fill: #FFFFFF;
-          font-family: Arial, sans-serif;
-          font-size: ${fontSize}px;
-          font-weight: 900;
-          letter-spacing: 2px;
-        }
-        .watermark-sub {
-          fill: #FF2A7A;
-          font-weight: 900;
-        }
-      </style>
-      <!-- Badge Central que Tapará 100% el Logo de Skokka -->
-      <g transform="translate(${centerX}, ${centerY})">
-        <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" class="watermark-pill"/>
-        <text x="${svgWidth / 2}" y="${svgHeight / 2 + fontSize * 0.35}" text-anchor="middle" class="watermark-text">
-          <tspan class="watermark-sub">🔥 </tspan>CITASRD.APP
-        </text>
+      <g transform="translate(${centerX}, ${centerY})" filter="url(#shadow)">
+        <!-- Container Pill Badge -->
+        <rect x="0" y="0" width="${svgWidth}" height="${svgHeight}" rx="${Math.floor(svgHeight / 2)}" ry="${Math.floor(svgHeight / 2)}" fill="#0A0B14" fill-opacity="0.95" stroke="#FF2A7A" stroke-width="3"/>
+        
+        <!-- Vector Flame Icon -->
+        <g transform="translate(${Math.floor(svgWidth * 0.07)}, ${iconY}) scale(${iconSize / 24})">
+          <path fill="url(#neonGrad)" d="M12 23c6.075 0 11-4.925 11-11 0-4.04-2.18-7.57-5.43-9.5a.75.75 0 0 0-1.12.82c.45 1.83.1 3.82-.99 5.34-1.2 1.67-3.15 2.5-5.11 2.22a8.03 8.03 0 0 1-5.74-5.38.75.75 0 0 0-1.3-.23C2.12 7.08 1 9.9 1 12c0 6.075 4.925 11 11 11z"/>
+        </g>
+
+        <!-- Brand Text -->
+        <text x="${Math.floor(svgWidth / 2 + iconSize * 0.4)}" y="${Math.floor(svgHeight / 2 + fontSize * 0.35)}" text-anchor="middle" fill="#FFFFFF" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="${fontSize}px" font-weight="900" letter-spacing="2px">CITASRD.APP</text>
       </g>
     </svg>
   `;

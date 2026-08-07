@@ -518,6 +518,33 @@
 		.lightbox-nav-prev { left: 20px; }
 		.lightbox-nav-next { right: 20px; }
 
+		/* Mobile Native Profile Modal & Pull-to-Close Gestures */
+		.modal-drag-indicator {
+			width: 46px;
+			height: 5px;
+			background: rgba(255, 255, 255, 0.45);
+			border-radius: 10px;
+			cursor: grab;
+		}
+		#escortModal .modal-dialog {
+			max-width: 520px;
+			margin: 1.5rem auto;
+			transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+		}
+		#escortModal .modal-content {
+			max-height: 90vh;
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+			border: 1px solid rgba(255, 255, 255, 0.18) !important;
+			box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85) !important;
+		}
+		#escortModal .modal-body {
+			overflow-y: auto !important;
+			-webkit-overflow-scrolling: touch !important;
+			overscroll-behavior: contain !important;
+		}
+
 		/* INSTAGRAM STORY PLAYER OVERLAY */
 		#storyPlayerOverlay {
 			position: fixed;
@@ -869,9 +896,12 @@
 	<div class="modal fade" id="escortModal" tabindex="-1" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered">
 			<div class="modal-content bg-dark text-white rounded-4 border-secondary">
-				<div class="modal-header border-secondary pb-2">
-					<h5 class="modal-title font-w700 text-white" id="modalEscortName">Perfil VIP</h5>
-					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+				<div class="modal-header border-secondary pb-2 flex-column align-items-center position-relative">
+					<div class="modal-drag-indicator mb-2"></div>
+					<div class="d-flex w-100 justify-content-between align-items-center">
+						<h5 class="modal-title font-w700 text-white mb-0" id="modalEscortName">Perfil VIP</h5>
+						<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+					</div>
 				</div>
 				<div class="modal-body p-4" id="modalEscortBody">
 					<!-- Detalle por JS -->
@@ -1531,6 +1561,69 @@
 				console.error(e);
 			}
 		};
+
+		// MOBILE GESTURES & BACKGROUND SCROLL LOCK FOR ESCORT MODAL
+		const escortModalElem = document.getElementById('escortModal');
+		const escortModalDialog = escortModalElem.querySelector('.modal-dialog');
+
+		escortModalElem.addEventListener('show.bs.modal', () => {
+			document.body.style.overflow = 'hidden';
+			document.body.style.touchAction = 'none';
+		});
+
+		escortModalElem.addEventListener('hidden.bs.modal', () => {
+			document.body.style.overflow = '';
+			document.body.style.touchAction = '';
+			if (escortModalDialog) escortModalDialog.style.transform = '';
+		});
+
+		// Touch Pull-Down Gesture Implementation (Deslizar hacia abajo para cerrar)
+		let touchStartY = 0;
+		let touchCurrentY = 0;
+		let isSwipingDown = false;
+
+		escortModalElem.addEventListener('touchstart', (e) => {
+			const modalBody = document.getElementById('modalEscortBody');
+			if (modalBody && modalBody.scrollTop <= 0) {
+				touchStartY = e.touches[0].clientY;
+				isSwipingDown = true;
+			} else {
+				isSwipingDown = false;
+			}
+		}, { passive: true });
+
+		escortModalElem.addEventListener('touchmove', (e) => {
+			if (!isSwipingDown) return;
+			const modalBody = document.getElementById('modalEscortBody');
+			if (!modalBody || modalBody.scrollTop > 0) return;
+
+			touchCurrentY = e.touches[0].clientY;
+			const deltaY = touchCurrentY - touchStartY;
+
+			if (deltaY > 0) {
+				if (e.cancelable) e.preventDefault();
+				escortModalDialog.style.transform = `translateY(${Math.min(deltaY * 0.7, 200)}px)`;
+			}
+		}, { passive: false });
+
+		escortModalElem.addEventListener('touchend', (e) => {
+			if (!isSwipingDown) return;
+			const deltaY = touchCurrentY - touchStartY;
+
+			if (deltaY > 80) {
+				escortModalDialog.style.transform = 'translateY(100vh)';
+				setTimeout(() => {
+					const inst = bootstrap.Modal.getInstance(escortModalElem);
+					if (inst) inst.hide();
+					escortModalDialog.style.transform = '';
+				}, 160);
+			} else {
+				escortModalDialog.style.transform = 'translateY(0)';
+			}
+			isSwipingDown = false;
+			touchStartY = 0;
+			touchCurrentY = 0;
+		});
 
 		// Initial load
 		fetchEscorts();

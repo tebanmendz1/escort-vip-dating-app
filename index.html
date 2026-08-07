@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<!-- Title -->
+	<title>Escort VIP | Plataforma de Acompañantes</title>
+
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, minimal-ui, viewport-fit=cover">
+	<meta name="theme-color" content="#FF2A7A">
+	<meta name="description" content="Plataforma de servicios de acompañantes VIP en formato Mobile Dating App. Contacto directo por WhatsApp.">
+	
+	<!-- Favicons Icon -->
+	<link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.png">
+	<link rel="manifest" href="manifest.json">
+    
+    <!-- Stylesheets -->
+	<link rel="stylesheet" href="assets/vendor/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" class="main-css" type="text/css" href="assets/css/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+	<style>
+		:root {
+			--primary: #FF2A7A;
+			--primary-gradient: linear-gradient(135deg, #FF2A7A 0%, #FF50A2 50%, #E02875 100%);
+			--bg-dark: #0F0F14;
+			--card-bg: #181822;
+			--text-main: #FFFFFF;
+		}
+
+		body {
+			font-family: 'Poppins', sans-serif;
+			background-color: #0d0e15;
+			color: #ffffff;
+			margin: 0;
+			padding-bottom: 75px;
+		}
+
+		/* Top Header Bar */
+		.app-header {
+			position: sticky;
+			top: 0;
+			z-index: 1000;
+			background: rgba(15, 15, 20, 0.92);
+			backdrop-filter: blur(12px);
+			border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+			padding: 12px 16px;
+		}
+		.app-logo {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-family: 'Outfit', sans-serif;
+			font-weight: 800;
+			font-size: 22px;
+			background: var(--primary-gradient);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			margin: 0;
+		}
+
+		/* Mode Tabs */
+		.view-mode-switcher {
+			display: flex;
+			background: rgba(255, 255, 255, 0.08);
+			padding: 4px;
+			border-radius: 25px;
+		}
+		.view-mode-btn {
+			border: none;
+			background: transparent;
+			color: rgba(255, 255, 255, 0.7);
+			padding: 6px 14px;
+			border-radius: 20px;
+			font-size: 13px;
+			font-weight: 600;
+			transition: all 0.3s ease;
+		}
+		.view-mode-btn.active {
+			background: var(--primary-gradient);
+			color: #ffffff;
+			box-shadow: 0 4px 12px rgba(255, 42, 122, 0.4);
+		}
+
+		/* Gender Pills Carousel */
+		.gender-filters {
+			display: flex;
+			gap: 8px;
+			overflow-x: auto;
+			padding: 12px 16px 4px 16px;
+			scrollbar-width: none;
+		}
+		.gender-filters::-webkit-scrollbar { display: none; }
+		.gender-pill {
+			white-space: nowrap;
+			background: rgba(255, 255, 255, 0.06);
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			color: #ddd;
+			padding: 8px 16px;
+			border-radius: 25px;
+			font-size: 13px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s ease;
+		}
+		.gender-pill.active {
+			background: var(--primary-gradient);
+			border-color: transparent;
+			color: #fff;
+			box-shadow: 0 4px 12px rgba(255, 42, 122, 0.35);
+		}
+
+		/* INSTAGRAM STORY RING ANIMATION */
+		.has-story-ring {
+			border: 3px solid #FF2A7A !important;
+			box-shadow: 0 0 15px rgba(255, 42, 122, 0.8);
+			animation: storyPulse 2s infinite;
+		}
+		@keyframes storyPulse {
+			0% { box-shadow: 0 0 0 0 rgba(255, 42, 122, 0.7); }
+			70% { box-shadow: 0 0 0 10px rgba(255, 42, 122, 0); }
+			100% { box-shadow: 0 0 0 0 rgba(255, 42, 122, 0); }
+		}
+
+		.story-badge-label {
+			position: absolute;
+			top: 15px;
+			right: 15px;
+			background: var(--primary-gradient);
+			color: #fff;
+			font-size: 11px;
+			font-weight: 800;
+			padding: 4px 10px;
+			border-radius: 20px;
+			box-shadow: 0 4px 10px rgba(255, 42, 122, 0.5);
+			z-index: 10;
+			cursor: pointer;
+		}
+
+		/* VIP Featured Carousel */
+		.featured-carousel-section { padding: 12px 16px; }
+		.featured-card {
+			position: relative;
+			width: 140px;
+			height: 190px;
+			border-radius: 18px;
+			overflow: hidden;
+			background: #181822;
+			border: 2px solid #FFD700;
+			box-shadow: 0 6px 16px rgba(255, 215, 0, 0.2);
+			cursor: pointer;
+			flex-shrink: 0;
+		}
+		.featured-card img { width: 100%; height: 100%; object-fit: cover; }
+		.featured-badge-star {
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			background: #FFD700;
+			color: #000;
+			font-size: 10px;
+			font-weight: 800;
+			padding: 2px 8px;
+			border-radius: 12px;
+		}
+		.featured-overlay {
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%);
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			padding: 8px;
+		}
+		.featured-name { font-size: 13px; font-weight: 700; color: #fff; margin: 0; }
+
+		/* Swipe Card Deck */
+		.swipe-deck-container {
+			max-width: 440px;
+			margin: 10px auto;
+			padding: 0 12px;
+			position: relative;
+		}
+		.dating-swipe-card {
+			position: relative;
+			width: 100%;
+			height: 520px;
+			border-radius: 24px;
+			overflow: hidden;
+			background: #181822;
+			box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+		}
+		.dating-swipe-card img { width: 100%; height: 100%; object-fit: cover; }
+		.card-overlay-gradient {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			height: 65%;
+			background: linear-gradient(to top, rgba(10,10,15,0.98) 0%, rgba(10,10,15,0.7) 50%, transparent 100%);
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			padding: 22px;
+		}
+		.badge-status-online {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			background: rgba(40, 167, 69, 0.9);
+			color: #fff;
+			padding: 4px 12px;
+			border-radius: 20px;
+			font-size: 12px;
+			font-weight: 700;
+			width: fit-content;
+			margin-bottom: 8px;
+		}
+		.badge-status-busy {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			background: rgba(220, 53, 69, 0.9);
+			color: #fff;
+			padding: 4px 12px;
+			border-radius: 20px;
+			font-size: 12px;
+			font-weight: 700;
+			width: fit-content;
+			margin-bottom: 8px;
+		}
+		.badge-verified {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			background: rgba(0, 123, 255, 0.9);
+			color: #fff;
+			padding: 4px 10px;
+			border-radius: 20px;
+			font-size: 11px;
+			font-weight: 700;
+			margin-left: 6px;
+		}
+		.escort-profile-title {
+			font-family: 'Outfit', sans-serif;
+			font-size: 24px;
+			font-weight: 800;
+			margin: 0;
+			color: #fff;
+		}
+		.escort-rate-tag { font-size: 20px; font-weight: 800; color: #FF50A2; }
+
+		/* Action Buttons */
+		.swipe-actions {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 16px;
+			margin-top: 14px;
+		}
+		.btn-action-round {
+			width: 60px;
+			height: 60px;
+			border-radius: 50%;
+			border: none;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 24px;
+			cursor: pointer;
+			transition: transform 0.2s ease;
+		}
+		.btn-action-round:hover { transform: scale(1.1); }
+		.btn-action-whatsapp {
+			background: #25D366;
+			color: #fff;
+			box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+			width: 70px;
+			height: 70px;
+			font-size: 30px;
+			text-decoration: none;
+		}
+		.btn-action-info { background: rgba(255, 255, 255, 0.12); color: #fff; }
+
+		/* Grid Card View */
+		.grid-container {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 12px;
+			padding: 12px 16px;
+		}
+		@media (min-width: 768px) { .grid-container { grid-template-columns: repeat(3, 1fr); } }
+		@media (min-width: 992px) { .grid-container { grid-template-columns: repeat(4, 1fr); } }
+		.badoo-card {
+			position: relative;
+			height: 270px;
+			border-radius: 18px;
+			overflow: hidden;
+			background: #181822;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			cursor: pointer;
+		}
+		.badoo-card img { width: 100%; height: 100%; object-fit: cover; }
+		.badoo-overlay {
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 40%, transparent 100%);
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+			padding: 12px;
+		}
+		.badoo-name { font-size: 15px; font-weight: 700; color: #fff; margin: 0; }
+		.badoo-price { font-size: 13px; font-weight: 800; color: #FF50A2; }
+
+		/* Bottom Navigation Bar */
+		.bottom-nav {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			z-index: 1050;
+			background: rgba(15, 15, 20, 0.95);
+			backdrop-filter: blur(15px);
+			border-top: 1px solid rgba(255, 255, 255, 0.08);
+			display: flex;
+			justify-content: space-around;
+			padding: 8px 0;
+		}
+		.bottom-nav-item {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			color: rgba(255, 255, 255, 0.5);
+			text-decoration: none;
+			font-size: 11px;
+			font-weight: 600;
+		}
+		.bottom-nav-item i { font-size: 20px; margin-bottom: 2px; }
+		.bottom-nav-item.active { color: #FF2A7A; }
+
+		/* Modal +18 Verification */
+		#ageVerifyModal {
+			position: fixed;
+			inset: 0;
+			background: rgba(8, 8, 12, 0.98);
+			backdrop-filter: blur(20px);
+			z-index: 99999;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+		}
+		.age-verify-box {
+			background: #161722;
+			border: 1px solid rgba(255, 42, 122, 0.3);
+			border-radius: 24px;
+			max-width: 440px;
+			width: 100%;
+			padding: 32px;
+			text-align: center;
+			box-shadow: 0 20px 60px rgba(255, 42, 122, 0.25);
+		}
+
+		/* PWA Install Banner Modal */
+		#pwaInstallModal {
+			position: fixed;
+			bottom: 80px;
+			left: 16px;
+			right: 16px;
+			max-width: 420px;
+			margin: 0 auto;
+			background: linear-gradient(135deg, #1d1e2c 0%, #251624 100%);
+			border: 1px solid rgba(255, 42, 122, 0.4);
+			border-radius: 20px;
+			padding: 16px;
+			z-index: 990;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+		}
+
+		.search-drawer {
+			background: #15151e;
+			color: #fff;
+			border-top-left-radius: 24px;
+			border-top-right-radius: 24px;
+		}
+
+		/* LIGHTBOX MODAL OVERLAY */
+		#lightboxOverlay {
+			position: fixed;
+			inset: 0;
+			background: rgba(5, 5, 10, 0.96);
+			backdrop-filter: blur(15px);
+			z-index: 100000;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+		}
+		.lightbox-header {
+			position: absolute;
+			top: 20px;
+			left: 20px;
+			right: 20px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			z-index: 100010;
+		}
+		.lightbox-counter {
+			font-family: 'Outfit', sans-serif;
+			font-size: 16px;
+			font-weight: 700;
+			color: #ffffff;
+			background: rgba(255, 255, 255, 0.15);
+			padding: 6px 16px;
+			border-radius: 20px;
+		}
+		.lightbox-btn-close {
+			background: rgba(255, 255, 255, 0.15);
+			color: #ffffff;
+			border: none;
+			border-radius: 50%;
+			width: 42px;
+			height: 42px;
+			font-size: 20px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.lightbox-media-container {
+			max-width: 90vw;
+			max-height: 80vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.lightbox-media-container img, .lightbox-media-container video {
+			max-width: 100%;
+			max-height: 80vh;
+			object-fit: contain;
+			border-radius: 16px;
+		}
+		.lightbox-nav-btn {
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			background: rgba(255, 42, 122, 0.85);
+			color: #ffffff;
+			border: none;
+			width: 50px;
+			height: 50px;
+			border-radius: 50%;
+			font-size: 22px;
+			cursor: pointer;
+			z-index: 100010;
+		}
+		.lightbox-nav-prev { left: 20px; }
+		.lightbox-nav-next { right: 20px; }
+
+		/* INSTAGRAM STORY PLAYER OVERLAY */
+		#storyPlayerOverlay {
+			position: fixed;
+			inset: 0;
+			background: #000;
+			z-index: 100020;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			padding: 16px;
+		}
+		.story-progress-bar-container {
+			display: flex;
+			gap: 4px;
+			margin-bottom: 12px;
+		}
+		.story-progress-segment {
+			flex: 1;
+			height: 3px;
+			background: rgba(255, 255, 255, 0.3);
+			border-radius: 2px;
+			overflow: hidden;
+		}
+		.story-progress-fill {
+			height: 100%;
+			width: 0%;
+			background: #fff;
+			transition: width 0.1s linear;
+		}
+		.story-user-info {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			color: #fff;
+			font-family: 'Outfit', sans-serif;
+			margin-bottom: 16px;
+		}
+		.story-user-avatar {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 2px solid #FF2A7A;
+		}
+		.story-media-view {
+			flex: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+			overflow: hidden;
+		}
+		.story-media-view img, .story-media-view video {
+			max-width: 100%;
+			max-height: 75vh;
+			object-fit: contain;
+			border-radius: 16px;
+		}
+		.story-caption-box {
+			background: rgba(0, 0, 0, 0.7);
+			backdrop-filter: blur(10px);
+			color: #fff;
+			padding: 14px 20px;
+			border-radius: 25px;
+			text-align: center;
+			margin: 16px 0;
+			font-size: 15px;
+			font-weight: 600;
+		}
+	</style>
+</head>   
+
+<body>
+	<div class="page-wrapper">
+
+		<!-- Modal Obligatorio +18 -->
+		<div id="ageVerifyModal">
+			<div class="age-verify-box">
+				<div style="font-size: 48px; margin-bottom: 10px;">🔞</div>
+				<h3 style="font-weight: 800; color: #fff; margin-bottom: 10px;">Contenido para Mayores de 18 Años</h3>
+				<p style="color: #bbb; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+					Este sitio contiene perfiles de servicios de acompañantes independientes para adultos. Al ingresar confirmas que tienes al menos 18 años de edad.
+				</p>
+				<button id="btnConfirmAge" class="btn w-100 py-3 font-w700 text-white rounded-pill mb-2" style="background: var(--primary-gradient); font-size: 16px;">
+					Tengo 18 Años o Más - Entrar
+				</button>
+				<a href="https://www.google.com" class="text-muted font-13" style="text-decoration: underline;">Salir del Sitio</a>
+			</div>
+		</div>
+
+		<!-- Top Header -->
+		<header class="app-header d-flex justify-content-between align-items-center">
+			<div class="app-logo">
+				<i class="fa-solid fa-fire text-primary font-24"></i> ESCORT VIP
+			</div>
+			
+			<div class="view-mode-switcher">
+				<button class="view-mode-btn active" id="btnSwipeMode">
+					<i class="fa-solid fa-clone me-1"></i> Swipe
+				</button>
+				<button class="view-mode-btn" id="btnGridMode">
+					<i class="fa-solid fa-border-all me-1"></i> Explorar
+				</button>
+			</div>
+
+			<a href="escort-register.html" class="btn btn-sm rounded-pill font-w600 text-white px-3" style="background: var(--primary-gradient);">
+				<i class="fa-solid fa-plus me-1"></i> Publicar
+			</a>
+		</header>
+
+		<!-- Expanded Gender Pills Carousel -->
+		<div class="gender-filters">
+			<button class="gender-pill active" data-gender="">Todas y Todos</button>
+			<button class="gender-pill" data-gender="FEMALE"><i class="fa-solid fa-venus me-1"></i> Mujeres</button>
+			<button class="gender-pill" data-gender="MALE"><i class="fa-solid fa-mars me-1"></i> Hombres</button>
+			<button class="gender-pill" data-gender="TRANS"><i class="fa-solid fa-transgender me-1"></i> Trans</button>
+			<button class="gender-pill" data-gender="NON_BINARY"><i class="fa-solid fa-genderless me-1"></i> No Binario</button>
+			<button class="gender-pill" data-gender="GAY"><i class="fa-solid fa-rainbow me-1"></i> Gay</button>
+			<button class="gender-pill" data-gender="LESBIAN"><i class="fa-solid fa-heart me-1"></i> Lesbiana</button>
+			<button class="gender-pill" data-gender="BISEXUAL"><i class="fa-solid fa-venus-mars me-1"></i> Bisexual</button>
+		</div>
+
+		<!-- VIP Featured Profiles Carousel -->
+		<div class="featured-carousel-section">
+			<div class="d-flex align-items-center justify-content-between mb-2">
+				<span class="font-w700 text-warning font-13"><i class="fa-solid fa-star me-1"></i> Destacados VIP</span>
+				<small class="text-muted font-11">Perfiles Recomendados</small>
+			</div>
+			<div class="d-flex gap-2 overflow-auto" id="featuredContainer" style="scrollbar-width: none;">
+				<!-- Carrusel destacado cargado por JS -->
+			</div>
+		</div>
+
+		<!-- Main Content Section -->
+		<main class="main-content">
+			
+			<!-- MODE 1: Tinder/Badoo Style Swipe Deck View -->
+			<div id="swipeViewSection" class="swipe-deck-container">
+				<div id="swipeCardContainer">
+					<!-- Carga dinámica de tarjeta activa -->
+				</div>
+
+				<div class="swipe-actions">
+					<button class="btn-action-round btn-action-info" id="btnPrevCard" title="Anterior">
+						<i class="fa-solid fa-arrow-left"></i>
+					</button>
+					<a href="#" id="swipeWhatsappBtn" target="_blank" class="btn-action-round btn-action-whatsapp" title="Contactar por WhatsApp">
+						<i class="fa-brands fa-whatsapp"></i>
+					</a>
+					<button class="btn-action-round btn-action-info" id="btnNextCard" title="Siguiente">
+						<i class="fa-solid fa-arrow-right"></i>
+					</button>
+				</div>
+			</div>
+
+			<!-- MODE 2: Badoo Style Grid Explore View -->
+			<div id="gridViewSection" class="grid-container d-none">
+				<!-- Carga dinámica de rejilla -->
+			</div>
+
+		</main>
+
+		<!-- Modal de Instalación PWA (A2HS) -->
+		<div id="pwaInstallModal" class="d-none">
+			<div class="d-flex align-items-center justify-content-between">
+				<div class="d-flex align-items-center gap-3">
+					<i class="fa-solid fa-mobile-screen-button text-primary font-28"></i>
+					<div>
+						<h6 class="font-w700 text-white mb-0">Instalar App Escort VIP</h6>
+						<small class="text-white-50">Acceso rápido desde tu pantalla de inicio</small>
+					</div>
+				</div>
+				<div class="d-flex gap-2">
+					<button id="btnPwaInstall" class="btn btn-primary btn-sm rounded-pill font-w600 px-3">Instalar</button>
+					<button id="btnPwaClose" class="btn btn-outline-light btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0;">✕</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Bottom Navigation Bar -->
+		<nav class="bottom-nav">
+			<a href="#" class="bottom-nav-item active" id="navExplore">
+				<i class="fa-solid fa-fire"></i> Descubrir
+			</a>
+			<a href="#" class="bottom-nav-item" id="navSearchTrigger" data-bs-toggle="offcanvas" data-bs-target="#searchOffcanvas">
+				<i class="fa-solid fa-sliders"></i> Filtros
+			</a>
+			<a href="admin.html" class="bottom-nav-item">
+				<i class="fa-solid fa-user-shield"></i> Admin
+			</a>
+			<a href="escort-register.html" class="bottom-nav-item">
+				<i class="fa-solid fa-user-plus"></i> Publicar
+			</a>
+			<a href="escort-login.html" class="bottom-nav-item" id="navProfileLink">
+				<i class="fa-solid fa-circle-user"></i> Mi Cuenta
+			</a>
+		</nav>
+
+	</div>
+
+	<!-- Filter Offcanvas Drawer -->
+	<div class="offcanvas offcanvas-bottom search-drawer" tabindex="-1" id="searchOffcanvas" style="height: 85vh;">
+		<div class="offcanvas-header border-bottom border-secondary">
+			<h5 class="offcanvas-title font-w700"><i class="fa-solid fa-sliders text-primary me-2"></i> Filtros Avanzados</h5>
+			<button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+		</div>
+		<div class="offcanvas-body">
+			
+			<!-- Rango de Edad -->
+			<div class="mb-3">
+				<label class="form-label font-w600 text-light">Rango de Edad</label>
+				<div class="row">
+					<div class="col-6">
+						<input type="number" id="filterMinAge" class="form-control bg-dark text-white border-secondary" placeholder="Edad Min (18)" min="18" max="70">
+					</div>
+					<div class="col-6">
+						<input type="number" id="filterMaxAge" class="form-control bg-dark text-white border-secondary" placeholder="Edad Máx (60)" min="18" max="70">
+					</div>
+				</div>
+			</div>
+
+			<!-- Nacionalidad -->
+			<div class="mb-3">
+				<label class="form-label font-w600 text-light">Nacionalidad</label>
+				<select id="filterNationality" class="form-select bg-dark text-white border-secondary">
+					<option value="">Todas las Nacionalidades</option>
+					<option value="Mexicana">Mexicana 🇲🇽</option>
+					<option value="Colombiana">Colombiana 🇨🇴</option>
+					<option value="Venezolana">Venezolana 🇻🇪</option>
+					<option value="Argentina">Argentina 🇦🇷</option>
+					<option value="Española">Española 🇪🇸</option>
+					<option value="Brasileña">Brasileña 🇧🇷</option>
+					<option value="Chilena">Chilena 🇨🇱</option>
+					<option value="Peruana">Peruana 🇵🇪</option>
+					<option value="Ecuatoriana">Ecuatoriana 🇪🇨</option>
+					<option value="Uruguaya">Uruguaya 🇺🇾</option>
+					<option value="Paraguaya">Paraguaya 🇵🇾</option>
+					<option value="Boliviana">Boliviana 🇧🇴</option>
+					<option value="Costarricense">Costarricense 🇨🇷</option>
+					<option value="Cubana">Cubana 🇨🇺</option>
+					<option value="Dominicana">Dominicana 🇩🇴</option>
+					<option value="Salvadoreña">Salvadoreña 🇸🇻</option>
+					<option value="Guatemalteca">Guatemalteca 🇬🇹</option>
+					<option value="Hondureña">Hondureña 🇭🇳</option>
+					<option value="Nicaragüense">Nicaragüense 🇳🇮</option>
+					<option value="Panameña">Panameña 🇵🇦</option>
+					<option value="Puertorriqueña">Puertorriqueña 🇵🇷</option>
+					<option value="Otra">Otra Nacionalidad 🌎</option>
+				</select>
+			</div>
+
+			<!-- Tipo de Cuerpo -->
+			<div class="mb-3">
+				<label class="form-label font-w600 text-light">Tipo de Cuerpo</label>
+				<select id="filterBodyType" class="form-select bg-dark text-white border-secondary">
+					<option value="">Cualquier Cuerpo</option>
+					<option value="Delgada">Delgada</option>
+					<option value="Atlética">Atlética</option>
+					<option value="Curvy">Curvy</option>
+					<option value="Normal">Normal</option>
+				</select>
+			</div>
+
+			<!-- Servicio Específico -->
+			<div class="mb-3">
+				<label class="form-label font-w600 text-light">Servicio Específico</label>
+				<input type="text" id="filterServiceInput" class="form-control bg-dark text-white border-secondary" placeholder="Ej. Cenas, Viajes, Masajes, Yacht Party">
+			</div>
+
+			<!-- Ciudad / Zona -->
+			<div class="mb-3">
+				<label class="form-label font-w600 text-light">Ciudad / Zona</label>
+				<input type="text" id="filterCityInput" class="form-control bg-dark text-white border-secondary" placeholder="Ej. Polanco, Cancún, Guadalajara">
+			</div>
+
+			<!-- Tarifa Máxima por Hora -->
+			<div class="mb-3">
+				<label class="form-label font-w600 text-light">Tarifa Máxima ($ USD/hr)</label>
+				<input type="number" id="filterMaxRate" class="form-control bg-dark text-white border-secondary" placeholder="Ej. 250">
+			</div>
+
+			<!-- Solo Disponibles -->
+			<div class="form-check form-switch mb-4">
+				<input class="form-check-input" type="checkbox" id="filterOnlineOnly">
+				<label class="form-check-label text-light font-w600" for="filterOnlineOnly">
+					🟢 Solo disponibles ahora (ONLINE)
+				</label>
+			</div>
+
+			<button id="applyFiltersBtn" class="btn w-100 py-3 font-w700 text-white rounded-pill mb-2" style="background: var(--primary-gradient);" data-bs-dismiss="offcanvas">
+				Aplicar Filtros
+			</button>
+			<button id="resetFiltersBtn" class="btn w-100 py-2 font-w600 text-muted btn-outline-secondary rounded-pill">
+				Limpiar Filtros
+			</button>
+		</div>
+	</div>
+
+	<!-- Modal para Detalle Completo de Escort -->
+	<div class="modal fade" id="escortModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content bg-dark text-white rounded-4 border-secondary">
+				<div class="modal-header border-secondary pb-2">
+					<h5 class="modal-title font-w700" id="modalEscortName">Perfil VIP</h5>
+					<button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body p-4" id="modalEscortBody">
+					<!-- Detalle por JS -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- LIGHTBOX MODAL OVERVIEW -->
+	<div id="lightboxOverlay" class="d-none">
+		<div class="lightbox-header">
+			<span class="lightbox-counter" id="lightboxCounter">1 / 1</span>
+			<button class="lightbox-btn-close" id="btnLightboxClose">✕</button>
+		</div>
+		<button class="lightbox-nav-btn lightbox-nav-prev" id="btnLightboxPrev">‹</button>
+		<div class="lightbox-media-container" id="lightboxMediaContainer"></div>
+		<button class="lightbox-nav-btn lightbox-nav-next" id="btnLightboxNext">›</button>
+	</div>
+
+	<!-- INSTAGRAM-STYLE 24H STORY PLAYER OVERLAY -->
+	<div id="storyPlayerOverlay" class="d-none">
+		<div class="d-flex flex-column w-100 h-100">
+			<!-- Progress Bar Segments -->
+			<div class="story-progress-bar-container" id="storyProgressContainer"></div>
+
+			<!-- User Header -->
+			<div class="story-user-info justify-content-between">
+				<div class="d-flex align-items-center gap-2">
+					<img src="" id="storyUserAvatar" class="story-user-avatar">
+					<div>
+						<h6 class="mb-0 font-w700 text-white" id="storyUserName">Nombre</h6>
+						<small class="text-white-50 font-11">Historia de 24 horas</small>
+					</div>
+				</div>
+				<button class="lightbox-btn-close" id="btnStoryClose">✕</button>
+			</div>
+
+			<!-- Story Media Player -->
+			<div class="story-media-view" id="storyMediaView">
+				<button class="lightbox-nav-btn lightbox-nav-prev" id="btnStoryPrev">‹</button>
+				<div id="storyContentMedia"></div>
+				<button class="lightbox-nav-btn lightbox-nav-next" id="btnStoryNext">›</button>
+			</div>
+
+			<!-- Story Caption Box -->
+			<div class="story-caption-box d-none" id="storyCaptionBox"></div>
+
+			<!-- WhatsApp Direct Button inside Story Player -->
+			<a href="#" id="storyWhatsappBtn" target="_blank" class="btn w-100 py-3 text-white font-w700 rounded-pill d-flex align-items-center justify-content-center gap-2" style="background: #25D366; font-size: 16px;">
+				<i class="fa-brands fa-whatsapp font-22"></i> Responder Historia por WhatsApp
+			</a>
+		</div>
+	</div>
+
+	<!-- Core Scripts -->
+	<script src="assets/js/jquery.js"></script>
+	<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+	<script src="assets/js/custom.js"></script>
+	<script src="index.js"></script>
+	<script src="assets/js/anti-adblock.js"></script>
+	<script src="assets/js/anti-screenshot.js"></script>
+
+	<!-- Escort Dating App Logic -->
+	<script type="module" src="assets/js/escort-api.js"></script>
+	<script type="module">
+		import { EscortAPI } from './assets/js/escort-api.js';
+
+		let escortsList = [];
+		let currentCardIndex = 0;
+		let currentGender = '';
+		let currentMode = 'swipe';
+
+		// Lightbox State
+		let currentGalleryMedia = [];
+		let currentLightboxIndex = 0;
+
+		// Story Player State
+		let activeStoriesList = [];
+		let currentStoryIndex = 0;
+		let currentStoryEscort = null;
+		let storyTimer = null;
+
+		// Age Verification check
+		if (localStorage.getItem('age_verified_18')) {
+			document.getElementById('ageVerifyModal').style.display = 'none';
+		}
+		document.getElementById('btnConfirmAge').addEventListener('click', () => {
+			localStorage.setItem('age_verified_18', 'true');
+			document.getElementById('ageVerifyModal').style.display = 'none';
+		});
+
+		// PWA Install prompt handling
+		let deferredPrompt = null;
+		window.addEventListener('beforeinstallprompt', (e) => {
+			e.preventDefault();
+			deferredPrompt = e;
+			document.getElementById('pwaInstallModal').classList.remove('d-none');
+		});
+		document.getElementById('btnPwaInstall').addEventListener('click', () => {
+			if (deferredPrompt) {
+				deferredPrompt.prompt();
+				deferredPrompt.userChoice.then(() => {
+					document.getElementById('pwaInstallModal').classList.add('d-none');
+					deferredPrompt = null;
+				});
+			}
+		});
+		document.getElementById('btnPwaClose').addEventListener('click', () => {
+			document.getElementById('pwaInstallModal').classList.add('d-none');
+		});
+
+		// Check logged user to update profile link
+		const user = EscortAPI.getCurrentUser();
+		if (user) {
+			const navLink = document.getElementById('navProfileLink');
+			navLink.href = 'escort-dashboard.html';
+		}
+
+		async function fetchEscorts() {
+			const city = document.getElementById('filterCityInput').value.trim();
+			const nationality = document.getElementById('filterNationality').value;
+			const bodyType = document.getElementById('filterBodyType').value;
+			const service = document.getElementById('filterServiceInput').value.trim();
+			const minAge = document.getElementById('filterMinAge').value;
+			const maxAge = document.getElementById('filterMaxAge').value;
+			const maxRate = document.getElementById('filterMaxRate').value;
+			const onlineOnly = document.getElementById('filterOnlineOnly').checked;
+
+			try {
+				const data = await EscortAPI.getPublicEscorts({
+					gender: currentGender,
+					city: city,
+					nationality: nationality,
+					bodyType: bodyType,
+					service: service,
+					minAge: minAge,
+					maxAge: maxAge,
+					maxRate: maxRate,
+					isAvailable: onlineOnly ? 'true' : ''
+				});
+				escortsList = data.escorts || [];
+				currentCardIndex = 0;
+				renderCurrentView();
+				renderFeaturedCarousel(escortsList.filter(e => e.isFeatured || e.isVerified));
+			} catch (err) {
+				console.error(err);
+			}
+		}
+
+		function renderFeaturedCarousel(featuredList) {
+			const container = document.getElementById('featuredContainer');
+			container.innerHTML = '';
+			if (!featuredList || featuredList.length === 0) {
+				container.parentElement.style.display = 'none';
+				return;
+			}
+			container.parentElement.style.display = 'block';
+
+			featuredList.forEach(escort => {
+				const hasStories = escort.stories && escort.stories.length > 0;
+				const card = document.createElement('div');
+				card.className = 'featured-card';
+				card.onclick = () => {
+					if (hasStories) {
+						openStoryPlayer(escort);
+					} else {
+						openDetailModal(escort.id);
+					}
+				};
+				card.innerHTML = `
+					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
+					<span class="featured-badge-star">⭐ VIP</span>
+					<div class="featured-overlay">
+						<h6 class="featured-name">${escort.name}</h6>
+						<small class="text-warning font-11 font-w700">$${escort.hourlyRate} USD</small>
+					</div>
+				`;
+				container.appendChild(card);
+			});
+		}
+
+		function renderCurrentView() {
+			if (currentMode === 'swipe') {
+				renderSwipeCard();
+			} else {
+				renderGrid();
+			}
+		}
+
+		function renderSwipeCard() {
+			const container = document.getElementById('swipeCardContainer');
+			if (!escortsList || escortsList.length === 0) {
+				container.innerHTML = `
+					<div class="dating-swipe-card d-flex flex-column align-items-center justify-content-center text-center p-4">
+						<i class="fa-regular fa-face-frown text-muted font-40 mb-3"></i>
+						<h4 class="font-w700 text-white">Sin perfiles con esos filtros</h4>
+						<p class="text-muted font-14">Ajusta o limpia los filtros de búsqueda.</p>
+					</div>
+				`;
+				document.getElementById('swipeWhatsappBtn').href = '#';
+				return;
+			}
+
+			if (currentCardIndex >= escortsList.length) currentCardIndex = 0;
+			if (currentCardIndex < 0) currentCardIndex = escortsList.length - 1;
+
+			const escort = escortsList[currentCardIndex];
+			const hasStories = escort.stories && escort.stories.length > 0;
+
+			const statusBadge = escort.isAvailable 
+				? `<div class="badge-status-online"><i class="fa-solid fa-circle font-8"></i> ONLINE</div>`
+				: `<div class="badge-status-busy"><i class="fa-solid fa-circle font-8"></i> OCUPADA(O)</div>`;
+
+			const verifiedBadge = escort.isVerified ? `<span class="badge-verified"><i class="fa-solid fa-check"></i> Verificado</span>` : '';
+			const storyBadge = hasStories ? `<span class="story-badge-label" onclick="event.stopPropagation(); openStoryPlayerById('${escort.id}')"><i class="fa-solid fa-circle-play me-1"></i> Ver Historia (24h)</span>` : '';
+
+			const whatsappClean = escort.whatsapp ? escort.whatsapp.replace(/\D/g, '') : '';
+			const whatsappMsg = encodeURIComponent(`Hola ${escort.name}, vi tu perfil en Escort VIP. ¿Tienes disponibilidad de servicio?`);
+			const whatsappLink = `https://wa.me/${whatsappClean}?text=${whatsappMsg}`;
+
+			container.innerHTML = `
+				<div class="dating-swipe-card">
+					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}" style="cursor: pointer;" onclick="handleAvatarClick('${escort.id}')">
+					${storyBadge}
+					<div class="card-overlay-gradient">
+						<div class="d-flex align-items-center gap-1 mb-1">
+							${statusBadge}
+							${verifiedBadge}
+						</div>
+						<div class="d-flex justify-content-between align-items-end mb-1">
+							<h2 class="escort-profile-title" onclick="openDetailModal('${escort.id}')" style="cursor: pointer;">${escort.name}, ${escort.age}</h2>
+							<div class="escort-rate-tag">$${escort.hourlyRate} <small class="font-12 text-white opacity-75">/hr</small></div>
+						</div>
+						<div class="text-light font-14 mb-1">
+							<i class="fa-solid fa-location-dot text-primary me-1"></i> ${escort.city} ${escort.zone ? '• ' + escort.zone : ''}
+						</div>
+						<div class="text-white-50 font-12 mb-2">
+							🌐 ${escort.nationality || 'Mexicana'} • 💃 ${escort.bodyType || 'Atlética'}
+						</div>
+						<p class="text-white-50 font-13 line-clamp-2 mb-2">${escort.services || 'Acompañante VIP'}</p>
+						<button class="btn btn-outline-light btn-sm rounded-pill w-100" onclick="openDetailModal('${escort.id}')">
+							<i class="fa-solid fa-circle-info me-1"></i> Ver Perfil Completo
+						</button>
+					</div>
+				</div>
+			`;
+
+			const waBtn = document.getElementById('swipeWhatsappBtn');
+			waBtn.href = whatsappLink;
+			waBtn.onclick = () => EscortAPI.getWhatsappLead(escort.id);
+		}
+
+		function renderGrid() {
+			const container = document.getElementById('gridViewSection');
+			container.innerHTML = '';
+
+			if (!escortsList || escortsList.length === 0) {
+				container.innerHTML = `<div class="col-12 text-center py-5 text-muted font-14">No se encontraron perfiles con los filtros actuales.</div>`;
+				return;
+			}
+
+			escortsList.forEach(escort => {
+				const hasStories = escort.stories && escort.stories.length > 0;
+				const statusColor = escort.isAvailable ? '#28a745' : '#dc3545';
+				const verifiedIcon = escort.isVerified ? '<i class="fa-solid fa-circle-check text-primary font-12 ms-1"></i>' : '';
+				const card = document.createElement('div');
+				card.className = 'badoo-card';
+				card.onclick = () => handleAvatarClick(escort.id);
+				card.innerHTML = `
+					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
+					<div class="badoo-overlay">
+						<div class="d-flex align-items-center gap-1 mb-1">
+							<span style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>
+							<h4 class="badoo-name">${escort.name}, ${escort.age} ${verifiedIcon}</h4>
+						</div>
+						<div class="badoo-meta mb-1"><i class="fa-solid fa-location-dot me-1"></i>${escort.city} • ${escort.nationality || 'Latina'}</div>
+						<div class="badoo-price">$${escort.hourlyRate} USD/hr</div>
+					</div>
+				`;
+				container.appendChild(card);
+			});
+		}
+
+		window.handleAvatarClick = (id) => {
+			const escort = escortsList.find(e => e.id === id);
+			if (escort && escort.stories && escort.stories.length > 0) {
+				openStoryPlayer(escort);
+			} else {
+				openDetailModal(id);
+			}
+		};
+
+		window.openStoryPlayerById = (id) => {
+			const escort = escortsList.find(e => e.id === id);
+			if (escort) openStoryPlayer(escort);
+		};
+
+		// 24H INSTAGRAM STORY PLAYER SYSTEM
+		function openStoryPlayer(escort) {
+			if (!escort || !escort.stories || escort.stories.length === 0) return;
+			currentStoryEscort = escort;
+			activeStoriesList = escort.stories;
+			currentStoryIndex = 0;
+
+			document.getElementById('storyUserName').textContent = escort.name;
+			document.getElementById('storyUserAvatar').src = escort.avatarUrl || 'assets/images/escorts/female1.jpg';
+
+			const whatsappClean = escort.whatsapp ? escort.whatsapp.replace(/\D/g, '') : '';
+			const whatsappMsg = encodeURIComponent(`Hola ${escort.name}, vi tu Historia de 24h en Escort VIP. Quisiera ponerme en contacto.`);
+			document.getElementById('storyWhatsappBtn').href = `https://wa.me/${whatsappClean}?text=${whatsappMsg}`;
+
+			document.getElementById('storyPlayerOverlay').classList.remove('d-none');
+			renderStoryItem();
+		}
+
+		function renderStoryItem() {
+			clearTimeout(storyTimer);
+			if (currentStoryIndex >= activeStoriesList.length) {
+				closeStoryPlayer();
+				return;
+			}
+			if (currentStoryIndex < 0) currentStoryIndex = 0;
+
+			const story = activeStoriesList[currentStoryIndex];
+
+			// Render Progress Bar Segments
+			const progressContainer = document.getElementById('storyProgressContainer');
+			progressContainer.innerHTML = '';
+			activeStoriesList.forEach((s, idx) => {
+				const seg = document.createElement('div');
+				seg.className = 'story-progress-segment';
+				const fill = document.createElement('div');
+				fill.className = 'story-progress-fill';
+				if (idx < currentStoryIndex) fill.style.width = '100%';
+				else if (idx === currentStoryIndex) fill.style.width = '100%';
+				seg.appendChild(fill);
+				progressContainer.appendChild(seg);
+			});
+
+			// Render Media
+			const mediaContainer = document.getElementById('storyContentMedia');
+			const isVideo = story.mediaType === 'VIDEO' || story.url.endsWith('.mp4') || story.url.endsWith('.webm');
+			if (isVideo) {
+				mediaContainer.innerHTML = `<video src="${story.url}" autoplay loop muted></video>`;
+			} else {
+				mediaContainer.innerHTML = `<img src="${story.url}" alt="Historia 24h">`;
+			}
+
+			// Render Caption
+			const captionBox = document.getElementById('storyCaptionBox');
+			if (story.caption) {
+				captionBox.textContent = story.caption;
+				captionBox.classList.remove('d-none');
+			} else {
+				captionBox.classList.add('d-none');
+			}
+
+			// Auto advance story after 5 seconds
+			storyTimer = setTimeout(() => {
+				currentStoryIndex++;
+				renderStoryItem();
+			}, 5500);
+		}
+
+		function closeStoryPlayer() {
+			clearTimeout(storyTimer);
+			document.getElementById('storyPlayerOverlay').classList.add('d-none');
+		}
+
+		document.getElementById('btnStoryPrev').addEventListener('click', () => {
+			currentStoryIndex--;
+			renderStoryItem();
+		});
+		document.getElementById('btnStoryNext').addEventListener('click', () => {
+			currentStoryIndex++;
+			renderStoryItem();
+		});
+		document.getElementById('btnStoryClose').addEventListener('click', closeStoryPlayer);
+
+		// View Mode Switcher
+		document.getElementById('btnSwipeMode').addEventListener('click', (e) => {
+			document.getElementById('btnSwipeMode').classList.add('active');
+			document.getElementById('btnGridMode').classList.remove('active');
+			document.getElementById('swipeViewSection').classList.remove('d-none');
+			document.getElementById('gridViewSection').classList.add('d-none');
+			currentMode = 'swipe';
+			renderCurrentView();
+		});
+
+		document.getElementById('btnGridMode').addEventListener('click', (e) => {
+			document.getElementById('btnGridMode').classList.add('active');
+			document.getElementById('btnSwipeMode').classList.remove('active');
+			document.getElementById('gridViewSection').classList.remove('d-none');
+			document.getElementById('swipeViewSection').classList.add('d-none');
+			currentMode = 'grid';
+			renderCurrentView();
+		});
+
+		// Gender Pill Filter Handler
+		document.querySelectorAll('.gender-pill').forEach(btn => {
+			btn.addEventListener('click', (e) => {
+				document.querySelectorAll('.gender-pill').forEach(b => b.classList.remove('active'));
+				e.currentTarget.classList.add('active');
+				currentGender = e.currentTarget.getAttribute('data-gender');
+				fetchEscorts();
+			});
+		});
+
+		// Swipe Controls
+		document.getElementById('btnPrevCard').addEventListener('click', () => {
+			currentCardIndex--;
+			renderSwipeCard();
+		});
+		document.getElementById('btnNextCard').addEventListener('click', () => {
+			currentCardIndex++;
+			renderSwipeCard();
+		});
+
+		// Apply & Reset Filters
+		document.getElementById('applyFiltersBtn').addEventListener('click', fetchEscorts);
+		document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+			document.getElementById('filterMinAge').value = '';
+			document.getElementById('filterMaxAge').value = '';
+			document.getElementById('filterNationality').value = '';
+			document.getElementById('filterBodyType').value = '';
+			document.getElementById('filterServiceInput').value = '';
+			document.getElementById('filterCityInput').value = '';
+			document.getElementById('filterMaxRate').value = '';
+			document.getElementById('filterOnlineOnly').checked = false;
+			fetchEscorts();
+		});
+
+		// LIGHTBOX VIEWER FUNCTIONS
+		function openLightbox(mediaList, startIndex = 0) {
+			currentGalleryMedia = mediaList;
+			currentLightboxIndex = startIndex;
+			document.getElementById('lightboxOverlay').classList.remove('d-none');
+			renderLightboxItem();
+		}
+
+		function renderLightboxItem() {
+			if (!currentGalleryMedia || currentGalleryMedia.length === 0) return;
+			if (currentLightboxIndex >= currentGalleryMedia.length) currentLightboxIndex = 0;
+			if (currentLightboxIndex < 0) currentLightboxIndex = currentGalleryMedia.length - 1;
+
+			const item = currentGalleryMedia[currentLightboxIndex];
+			document.getElementById('lightboxCounter').textContent = `${currentLightboxIndex + 1} / ${currentGalleryMedia.length}`;
+
+			const container = document.getElementById('lightboxMediaContainer');
+			const isVideo = item.mediaType === 'VIDEO' || item.url.endsWith('.mp4') || item.url.endsWith('.webm');
+
+			if (isVideo) {
+				container.innerHTML = `<video src="${item.url}" controls autoplay loop style="max-width:100%; max-height:80vh; border-radius:16px;"></video>`;
+			} else {
+				container.innerHTML = `<img src="${item.url}" alt="Ampliada" style="max-width:100%; max-height:80vh; object-fit:contain; border-radius:16px;">`;
+			}
+		}
+
+		document.getElementById('btnLightboxPrev').addEventListener('click', () => {
+			currentLightboxIndex--;
+			renderLightboxItem();
+		});
+		document.getElementById('btnLightboxNext').addEventListener('click', () => {
+			currentLightboxIndex++;
+			renderLightboxItem();
+		});
+		document.getElementById('btnLightboxClose').addEventListener('click', () => {
+			document.getElementById('lightboxOverlay').classList.add('d-none');
+		});
+
+		// Modal Detail Function
+		window.openDetailModal = async (id) => {
+			try {
+				const escort = await EscortAPI.getEscortDetail(id);
+				const hasStories = escort.stories && escort.stories.length > 0;
+				const verifiedBadge = escort.isVerified ? '<span class="badge bg-primary ms-2"><i class="fa-solid fa-check me-1"></i> Verificado</span>' : '';
+				document.getElementById('modalEscortName').innerHTML = `${escort.name}, ${escort.age} ${verifiedBadge}`;
+				
+				const allMedia = [];
+				if (escort.avatarUrl) {
+					allMedia.push({ url: escort.avatarUrl, mediaType: 'IMAGE' });
+				}
+				(escort.photos || []).forEach(p => {
+					if (p.url !== escort.avatarUrl) allMedia.push(p);
+				});
+
+				const photosHtml = allMedia.map((p, idx) => `
+					<div class="col-4 mb-2">
+						<img src="${p.url}" class="img-fluid rounded-3" style="height: 100px; width: 100%; object-fit: cover; cursor: pointer;" onclick="openLightboxFromDetail(${idx})">
+					</div>
+				`).join('');
+
+				window.openLightboxFromDetail = (idx) => {
+					openLightbox(allMedia, idx);
+				};
+
+				const whatsappClean = escort.whatsapp ? escort.whatsapp.replace(/\D/g, '') : '';
+				const whatsappMsg = encodeURIComponent(`Hola ${escort.name}, vi tu perfil en Escort VIP. Quisiera consultar tus servicios.`);
+				const whatsappLink = `https://wa.me/${whatsappClean}?text=${whatsappMsg}`;
+
+				document.getElementById('modalEscortBody').innerHTML = `
+					<div class="text-center mb-3">
+						<div style="position: relative; display: inline-block;">
+							<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="rounded-circle mb-2 ${hasStories ? 'has-story-ring' : ''}" style="width: 110px; height: 110px; object-fit: cover; border: 3px solid #FF2A7A; cursor: pointer;" onclick="handleAvatarClick('${escort.id}')">
+							${hasStories ? '<span class="badge bg-danger position-absolute bottom-0 start-50 translate-middle-x rounded-pill font-10">Ver Historia 📸</span>' : ''}
+						</div>
+						<h4 class="font-w800 text-white mb-0">${escort.name}, ${escort.age} años</h4>
+						<span class="text-primary font-w600 font-14"><i class="fa-solid fa-location-dot me-1"></i> ${escort.city} ${escort.zone ? '• ' + escort.zone : ''}</span>
+					</div>
+
+					<div class="bg-secondary bg-opacity-25 p-3 rounded-3 mb-3">
+						<div class="row text-center">
+							<div class="col-4 border-end border-secondary">
+								<span class="text-white-50 font-11 d-block">Tarifa</span>
+								<strong class="font-16 text-primary">$${escort.hourlyRate} USD</strong>
+							</div>
+							<div class="col-4 border-end border-secondary">
+								<span class="text-white-50 font-11 d-block">Nacionalidad</span>
+								<strong class="font-13 text-white">${escort.nationality || 'Latina'}</strong>
+							</div>
+							<div class="col-4">
+								<span class="text-white-50 font-11 d-block">Cuerpo</span>
+								<strong class="font-13 text-white">${escort.bodyType || 'Atlética'}</strong>
+							</div>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<h6 class="font-w700 text-white">Sobre Mí</h6>
+						<p class="text-white-50 font-14 mb-0">${escort.bio || 'Sin descripción disponible.'}</p>
+					</div>
+
+					<div class="mb-3">
+						<h6 class="font-w700 text-white">Servicios Ofrecidos</h6>
+						<p class="font-14 text-white bg-secondary bg-opacity-25 p-2 rounded">${escort.services || 'Acompañante VIP'}</p>
+					</div>
+
+					${photosHtml ? `
+						<div class="mb-3">
+							<h6 class="font-w700 text-white mb-2">Galería (Toca para ampliar 🔍)</h6>
+							<div class="row g-2">${photosHtml}</div>
+						</div>
+					` : ''}
+
+					<a href="${whatsappLink}" target="_blank" onclick="EscortAPI.getWhatsappLead('${escort.id}')" class="btn w-100 py-3 mt-2 text-white font-w700 rounded-pill d-flex align-items-center justify-content-center gap-2" style="background: #25D366; font-size: 16px;">
+						<i class="fa-brands fa-whatsapp font-22"></i> Contactar por WhatsApp Directo
+					</a>
+				`;
+
+				const modal = new bootstrap.Modal(document.getElementById('escortModal'));
+				modal.show();
+			} catch (e) {
+				console.error(e);
+			}
+		};
+
+		// Initial load
+		fetchEscorts();
+	</script>
+</body>
+</html>

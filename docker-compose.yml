@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: escort_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://escort_user:escort_password@postgres:5432/escort_db?schema=public
+      - JWT_SECRET=super-secret-escort-vps-key
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: escort_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: escort_user
+      POSTGRES_PASSWORD: escort_password
+      POSTGRES_DB: escort_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

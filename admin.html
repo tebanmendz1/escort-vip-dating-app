@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<title>Panel de Administración | Escort VIP</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+	<meta name="theme-color" content="#FF2A7A">
+	<link rel="shortcut icon" type="image/x-icon" href="assets/images/favicon.png">
+	<link rel="stylesheet" class="main-css" type="text/css" href="assets/css/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+	
+	<style>
+		:root {
+			--primary: #FF2A7A;
+			--primary-gradient: linear-gradient(135deg, #FF2A7A 0%, #FF50A2 50%, #E02875 100%);
+			--bg-deep: #08090E;
+			--card-bg: #141523;
+			--input-bg: #1D1E30;
+			--border-color: rgba(255, 255, 255, 0.18);
+			--text-bright: #FFFFFF;
+			--text-sub: #CBD5E1;
+		}
+
+		body {
+			background-color: var(--bg-deep) !important;
+			color: var(--text-bright) !important;
+			font-family: 'Poppins', sans-serif;
+			margin: 0;
+			padding-bottom: 60px;
+		}
+
+		.admin-card {
+			background: var(--card-bg) !important;
+			border: 1px solid var(--border-color) !important;
+			border-radius: 20px !important;
+			padding: 24px !important;
+			box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+			margin-bottom: 24px;
+		}
+
+		.form-label {
+			color: #F8FAFC !important;
+			font-weight: 700 !important;
+			font-size: 14px !important;
+			margin-bottom: 8px !important;
+		}
+
+		.form-control, .form-select, textarea {
+			background-color: var(--input-bg) !important;
+			color: #FFFFFF !important;
+			border: 1px solid rgba(255, 255, 255, 0.22) !important;
+			border-radius: 12px !important;
+			padding: 12px 16px !important;
+			font-size: 15px !important;
+		}
+
+		.form-control:focus, .form-select:focus {
+			border-color: #FF2A7A !important;
+			box-shadow: 0 0 0 3px rgba(255, 42, 122, 0.35) !important;
+			outline: none !important;
+		}
+
+		/* TABLE OVERRIDE FOR PERFECT DARK CONTRAST */
+		table, .table, .table-dark-custom {
+			background-color: #141523 !important;
+			color: #FFFFFF !important;
+			border-collapse: collapse !important;
+			width: 100% !important;
+		}
+
+		table th, .table th, .table-dark-custom th {
+			background-color: #1A1B2E !important;
+			color: #F8FAFC !important;
+			font-weight: 800 !important;
+			font-size: 13px !important;
+			text-transform: uppercase !important;
+			padding: 14px !important;
+			border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
+		}
+
+		table td, .table td, .table-dark-custom td {
+			background-color: #141523 !important;
+			color: #FFFFFF !important;
+			padding: 14px !important;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+			vertical-align: middle !important;
+		}
+
+		table tr:hover td {
+			background-color: #1E1F35 !important;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container py-4">
+
+		<!-- Admin Header -->
+		<div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-secondary">
+			<h3 class="font-w800 text-white mb-0" style="font-family: 'Outfit', sans-serif;"><i class="fa-solid fa-user-shield text-primary me-2"></i> Panel de Control Admin</h3>
+			<div>
+				<a href="index.html" class="btn btn-outline-light btn-sm rounded-pill font-w600 me-2">Ir al Sitio</a>
+				<button id="adminLogoutBtn" class="btn btn-danger btn-sm rounded-pill font-w600 d-none">Cerrar Sesión Admin</button>
+			</div>
+		</div>
+
+		<!-- Login Form (If not authenticated as Admin) -->
+		<div id="adminLoginForm" class="admin-card p-4 mx-auto" style="max-width: 440px;">
+			<h4 class="font-w800 text-white text-center mb-3">Acceso Administrador</h4>
+			<div id="loginAlert" class="alert alert-danger d-none"></div>
+			<form id="formAdminLogin">
+				<div class="mb-3">
+					<label class="form-label">Correo Admin</label>
+					<input type="email" id="adminEmail" class="form-control" value="admin@escorts.com" required>
+				</div>
+				<div class="mb-3">
+					<label class="form-label">Contraseña Admin</label>
+					<input type="password" id="adminPass" class="form-control" value="admin123" required>
+				</div>
+				<button type="submit" class="btn w-100 py-3 font-w700 text-white rounded-pill" style="background: var(--primary-gradient);">
+					Ingresar al Panel
+				</button>
+			</form>
+		</div>
+
+		<!-- Main Admin Content (Visible after Login) -->
+		<div id="adminMainContent" class="d-none">
+
+			<!-- Tabs -->
+			<ul class="nav nav-pills mb-4" id="adminTabs">
+				<li class="nav-item">
+					<button class="nav-link active rounded-pill font-w600" id="tabEscorts" style="background: var(--primary-gradient);">Gestión de Perfiles Escorts</button>
+				</li>
+				<li class="nav-item ms-2">
+					<button class="nav-link rounded-pill font-w600 text-white border border-secondary" id="tabConfig">Configuración ADS y Anti-Adblock</button>
+				</li>
+				<li class="nav-item ms-2">
+					<button class="nav-link rounded-pill font-w600 text-white border border-secondary" id="tabPassword">Cambiar Contraseña</button>
+				</li>
+			</ul>
+
+			<!-- Section 1: Escorts Table -->
+			<div id="sectionEscorts" class="admin-card">
+				<h5 class="font-w800 text-white mb-3">Listado de Perfiles de Escorts</h5>
+				<div class="table-responsive">
+					<table class="table table-dark-custom">
+						<thead>
+							<tr>
+								<th>Foto / Nombre</th>
+								<th>Género</th>
+								<th>Ciudad</th>
+								<th>Verificación</th>
+								<th>Destacado (VIP)</th>
+								<th>Estado</th>
+								<th>Acciones</th>
+							</tr>
+						</thead>
+						<tbody id="escortsTableBody">
+							<!-- Carga dinámica -->
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- Section 2: Config ADS & Anti-Adblock -->
+			<div id="sectionConfig" class="admin-card d-none">
+				<h5 class="font-w800 text-white mb-3">Configuración de Anuncios y Anti-Adblock</h5>
+				<form id="configForm">
+					<div class="form-check form-switch mb-3">
+						<input class="form-check-input" type="checkbox" id="adsEnabled">
+						<label class="form-check-label text-white font-w600" for="adsEnabled">Activar Banners de Anuncios en el Sitio</label>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label">Código HTML del Banner de Anuncio</label>
+						<textarea id="bannerCode" class="form-control" rows="4" placeholder="Pega tu código publicitario de Google AdSense o Banner HTML aquí..."></textarea>
+					</div>
+
+					<div class="form-check form-switch mb-4">
+						<input class="form-check-input" type="checkbox" id="antiAdblock">
+						<label class="form-check-label text-white font-w600" for="antiAdblock">Activar Detector Estricto Anti-Adblock y Brave Shields</label>
+					</div>
+
+					<button type="submit" class="btn btn-primary font-w700 rounded-pill px-4" style="background: var(--primary-gradient);">Guardar Configuración</button>
+				</form>
+			</div>
+
+			<!-- Section 3: Change Admin Password -->
+			<div id="sectionPassword" class="admin-card d-none" style="max-width: 480px;">
+				<h5 class="font-w800 text-white mb-3">Cambiar Contraseña de Administrador</h5>
+				<div id="adminPassAlert" class="alert d-none font-w600"></div>
+				<form id="adminPassForm">
+					<div class="mb-3">
+						<label class="form-label">Contraseña Actual del Admin *</label>
+						<input type="password" id="adminCurrentPass" class="form-control" required>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Nueva Contraseña de Admin *</label>
+						<input type="password" id="adminNewPass" class="form-control" required minlength="5">
+					</div>
+					<button type="submit" class="btn btn-primary w-100 py-3 font-w700 rounded-pill" style="background: var(--primary-gradient);">
+						Actualizar Contraseña de Admin
+					</button>
+				</form>
+			</div>
+
+		</div>
+	</div>
+
+	<script src="assets/js/jquery.js"></script>
+	<script type="module">
+		import { EscortAPI } from './assets/js/escort-api.js';
+
+		let adminToken = localStorage.getItem('escort_admin_token');
+
+		if (adminToken) {
+			showAdminMain();
+		}
+
+		document.getElementById('formAdminLogin').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const email = document.getElementById('adminEmail').value;
+			const password = document.getElementById('adminPass').value;
+			const alertBox = document.getElementById('loginAlert');
+
+			try {
+				const res = await fetch('/api/admin/login', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ email, password })
+				});
+				const data = await res.json();
+				if (!res.ok) throw new Error(data.error || 'Credenciales incorrectas');
+
+				adminToken = data.token;
+				localStorage.setItem('escort_admin_token', adminToken);
+				showAdminMain();
+			} catch (err) {
+				alertBox.textContent = err.message;
+				alertBox.classList.remove('d-none');
+			}
+		});
+
+		function showAdminMain() {
+			document.getElementById('adminLoginForm').classList.add('d-none');
+			document.getElementById('adminMainContent').classList.remove('d-none');
+			document.getElementById('adminLogoutBtn').classList.remove('d-none');
+			loadEscortsTable();
+			loadConfig();
+		}
+
+		document.getElementById('adminLogoutBtn').addEventListener('click', () => {
+			localStorage.removeItem('escort_admin_token');
+			window.location.reload();
+		});
+
+		const tabs = ['Escorts', 'Config', 'Password'];
+		tabs.forEach(t => {
+			document.getElementById(`tab${t}`).addEventListener('click', () => {
+				tabs.forEach(other => {
+					const btn = document.getElementById(`tab${other}`);
+					const sec = document.getElementById(`section${other}`);
+					if (other === t) {
+						btn.classList.add('active');
+						btn.style.background = 'var(--primary-gradient)';
+						sec.classList.remove('d-none');
+					} else {
+						btn.classList.remove('active');
+						btn.style.background = 'transparent';
+						sec.classList.add('d-none');
+					}
+				});
+			});
+		});
+
+		async function loadEscortsTable() {
+			try {
+				const res = await fetch('/api/admin/escorts', {
+					headers: { 'Authorization': `Bearer ${adminToken}` }
+				});
+				const escorts = await res.json();
+
+				const tbody = document.getElementById('escortsTableBody');
+				tbody.innerHTML = '';
+
+				escorts.forEach(e => {
+					const tr = document.createElement('tr');
+
+					const verifiedStatus = e.isVerified 
+						? '<span class="badge bg-success">✔️ Verificado</span>'
+						: (e.verificationRequested ? '<span class="badge bg-warning text-dark">⏳ Solicitado</span>' : '<span class="badge bg-secondary">Sin Verificar</span>');
+
+					const featuredStatus = e.isFeatured 
+						? '<span class="badge bg-warning text-dark">⭐ VIP Destacado</span>'
+						: '<span class="badge bg-dark border border-secondary">Estándar</span>';
+
+					const blockStatus = e.isBlocked
+						? '<span class="badge bg-danger">🚫 Bloqueado</span>'
+						: '<span class="badge bg-success">Activo</span>';
+
+					tr.innerHTML = `
+						<td>
+							<div class="d-flex align-items-center gap-2">
+								<img src="${e.avatarUrl || 'assets/images/escorts/female1.jpg'}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #FF2A7A;">
+								<div>
+									<strong class="text-white font-15 d-block">${e.name}</strong>
+									<small class="text-white-50 font-12">${e.email}</small>
+								</div>
+							</div>
+						</td>
+						<td><span class="badge bg-dark text-white border border-secondary">${e.gender}</span></td>
+						<td><strong class="text-white font-14">${e.city}</strong></td>
+						<td>${verifiedStatus}</td>
+						<td>${featuredStatus}</td>
+						<td>${blockStatus}</td>
+						<td>
+							<button class="btn btn-sm ${e.isVerified ? 'btn-outline-secondary' : 'btn-success'} rounded-pill me-1 mb-1 font-w600" onclick="toggleVerify('${e.id}', ${!e.isVerified})">
+								${e.isVerified ? 'Quitar Verificado' : 'Aprobar Verificado ✔️'}
+							</button>
+							<button class="btn btn-sm ${e.isFeatured ? 'btn-outline-warning' : 'btn-warning'} rounded-pill me-1 mb-1 font-w600" onclick="toggleFeature('${e.id}', ${!e.isFeatured})">
+								${e.isFeatured ? 'Quitar VIP' : 'Hacer VIP ⭐'}
+							</button>
+							<button class="btn btn-sm ${e.isBlocked ? 'btn-outline-success' : 'btn-danger'} rounded-pill mb-1 font-w600" onclick="toggleBlock('${e.id}', ${!e.isBlocked})">
+								${e.isBlocked ? 'Desbloquear' : 'Bloquear 🚫'}
+							</button>
+						</td>
+					`;
+					tbody.appendChild(tr);
+				});
+			} catch (err) {
+				console.error(err);
+			}
+		}
+
+		window.toggleVerify = async (id, isVerified) => {
+			await fetch(`/api/admin/escorts/${id}/verify`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+				body: JSON.stringify({ isVerified })
+			});
+			loadEscortsTable();
+		};
+
+		window.toggleFeature = async (id, isFeatured) => {
+			await fetch(`/api/admin/escorts/${id}/feature`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+				body: JSON.stringify({ isFeatured })
+			});
+			loadEscortsTable();
+		};
+
+		window.toggleBlock = async (id, isBlocked) => {
+			await fetch(`/api/admin/escorts/${id}/block`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+				body: JSON.stringify({ isBlocked })
+			});
+			loadEscortsTable();
+		};
+
+		async function loadConfig() {
+			try {
+				const res = await fetch('/api/admin/config', {
+					headers: { 'Authorization': `Bearer ${adminToken}` }
+				});
+				const config = await res.json();
+				document.getElementById('adsEnabled').checked = config.adsEnabled;
+				document.getElementById('bannerCode').value = config.bannerCode || '';
+				document.getElementById('antiAdblock').checked = config.antiAdblock;
+			} catch (err) {
+				console.error(err);
+			}
+		}
+
+		document.getElementById('configForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const adsEnabled = document.getElementById('adsEnabled').checked;
+			const bannerCode = document.getElementById('bannerCode').value;
+			const antiAdblock = document.getElementById('antiAdblock').checked;
+
+			try {
+				await fetch('/api/admin/config', {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+					body: JSON.stringify({ adsEnabled, bannerCode, antiAdblock })
+				});
+				alert('¡Configuración guardada con éxito!');
+			} catch (err) {
+				alert('Error al guardar configuración.');
+			}
+		});
+
+		document.getElementById('adminPassForm').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const currentPassword = document.getElementById('adminCurrentPass').value;
+			const newPassword = document.getElementById('adminNewPass').value;
+			const alertBox = document.getElementById('adminPassAlert');
+
+			try {
+				const res = await fetch('/api/admin/change-password', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+					body: JSON.stringify({ currentPassword, newPassword })
+				});
+				const data = await res.json();
+				if (!res.ok) throw new Error(data.error || 'Error al cambiar contraseña');
+
+				alertBox.textContent = data.message;
+				alertBox.className = 'alert alert-success font-w600';
+				document.getElementById('adminCurrentPass').value = '';
+				document.getElementById('adminNewPass').value = '';
+			} catch (err) {
+				alertBox.textContent = err.message;
+				alertBox.className = 'alert alert-danger font-w600';
+			}
+		});
+	</script>
+</body>
+</html>

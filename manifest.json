@@ -1,0 +1,16 @@
+{
+  "name": "Escort Mobile App",
+  "short_name": "Escort App",
+  "description": "Escort Mobile Platform Template ( Bootstrap + PWA )",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FF50A2",
+  "theme_color": "#FF50A2",
+  "icons": [
+    {
+      "src": "assets/images/pwa150x150.png",
+      "sizes": "150x150",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Escort {
+  id                    String   @id @default(uuid())
+  email                 String   @unique
+  passwordHash          String
+  name                  String
+  gender                String   // "FEMALE", "MALE", "TRANS", "NON_BINARY", "GAY", "LESBIAN", "BISEXUAL"
+  age                   Int
+  nationality           String?  @default("Mexicana")
+  bodyType              String?  @default("Atlética")
+  city                  String
+  zone                  String?
+  bio                   String?
+  phone                 String
+  whatsapp              String
+  telegram              String?
+  hourlyRate            Float    @default(0)
+  currency              String   @default("USD")
+  isAvailable           Boolean  @default(true)
+  isVerified            Boolean  @default(false)
+  isFeatured            Boolean  @default(false)
+  isBlocked             Boolean  @default(false)
+  verificationRequested Boolean  @default(false)
+  profileViews          Int      @default(0)
+  whatsappClicks        Int      @default(0)
+  services              String
+  schedule              String?  @default("24/7")
+  avatarUrl             String?
+  photos                Photo[]
+  stories               Story[]
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Photo {
+  id         String   @id @default(uuid())
+  url        String
+  mediaType  String   @default("IMAGE") // "IMAGE" or "VIDEO"
+  isPrimary  Boolean  @default(false)
+  viewsCount Int      @default(0)
+  escortId   String
+  escort     Escort   @relation(fields: [escortId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model Story {
+  id        String   @id @default(uuid())
+  url       String
+  mediaType String   @default("IMAGE") // "IMAGE" or "VIDEO"
+  caption   String?
+  escortId  String
+  escort    Escort   @relation(fields: [escortId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model AdminConfig {
+  id            String   @id @default("config")
+  adsEnabled    Boolean  @default(true)
+  bannerCode    String?  @default("<div class='alert alert-pink text-center my-2'>Anuncio Patrocinado - Publicidad VIP</div>")
+  antiAdblock   Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+}

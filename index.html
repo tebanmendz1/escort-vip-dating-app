@@ -394,6 +394,9 @@
 			justify-content: center;
 			padding: 20px;
 		}
+		#ageVerifyModal.d-none {
+			display: none !important;
+		}
 		.age-verify-box {
 			background: #161722;
 			border: 1px solid rgba(255, 42, 122, 0.3);
@@ -989,14 +992,37 @@
 		let currentStoryEscort = null;
 		let storyTimer = null;
 
-		// Age Verification check
-		if (localStorage.getItem('age_verified_18')) {
-			document.getElementById('ageVerifyModal').style.display = 'none';
+		// Age Verification check (Fail-safe for Safari Private Browsing & Mobile WebViews)
+		function hideAgeModal() {
+			const modal = document.getElementById('ageVerifyModal');
+			if (modal) {
+				modal.style.display = 'none';
+				modal.classList.add('d-none');
+				modal.style.setProperty('display', 'none', 'important');
+			}
 		}
-		document.getElementById('btnConfirmAge').addEventListener('click', () => {
-			localStorage.setItem('age_verified_18', 'true');
-			document.getElementById('ageVerifyModal').style.display = 'none';
-		});
+
+		try {
+			if (localStorage.getItem('age_verified_18') === 'true') {
+				hideAgeModal();
+			}
+		} catch (e) {
+			console.warn('LocalStorage error:', e);
+		}
+
+		const btnAge = document.getElementById('btnConfirmAge');
+		if (btnAge) {
+			btnAge.addEventListener('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				try {
+					localStorage.setItem('age_verified_18', 'true');
+				} catch (err) {
+					console.warn('Could not save to localStorage:', err);
+				}
+				hideAgeModal();
+			});
+		}
 
 		// PWA Install Prompt Display Logic (Android / iOS / Chrome)
 		let deferredPrompt = null;

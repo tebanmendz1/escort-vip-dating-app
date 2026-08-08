@@ -472,6 +472,19 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     if (cleanUrl) watermarkedPhotos.push(cleanUrl);
   }
 
+  // 3.5. Extraer Tarifa / Precio Real
+  let hourlyRate = 0;
+  const priceElementText = $('[data-testid="ad-detail-price"], .price, .price-tag').text().trim();
+  const priceMatch = priceElementText.match(/(?:RD\$|\$|RD)?\s*([\d,.]+)/i)
+                  || rawBio.match(/(?:RD\$|\$|RD)\s*([\d,.]+)/i)
+                  || rawBio.match(/(\d{1,2}[\s,.]?\d{3})\s*(?:pesos|rd|dop|\$|\/h|\/hr|hora)/i);
+  if (priceMatch) {
+    const parsedPrice = parseInt(priceMatch[1].replace(/[.,\s]/g, ''), 10);
+    if (parsedPrice >= 500 && parsedPrice <= 50000) {
+      hourlyRate = parsedPrice;
+    }
+  }
+
   const avatarUrl = watermarkedPhotos.length > 0 ? watermarkedPhotos[0] : 'assets/images/escorts/female1.jpg';
 
   // Crear modelo en Base de Datos
@@ -486,7 +499,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     zone: 'Centro',
     phone: whatsapp,
     whatsapp,
-    hourlyRate: 4000,
+    hourlyRate: hourlyRate,
     currency: 'DOP',
     services: servicesFormatted,
     bio: fullBio,

@@ -2,28 +2,49 @@ import * as Minio from 'minio';
 import fs from 'fs';
 import path from 'path';
 
-// Cargar variables de entorno
-const endpoint = process.env.MINIO_ENDPOINT || 'localhost';
-const port = parseInt(process.env.MINIO_PORT || '9000', 10);
-const useSSL = process.env.MINIO_USE_SSL === 'true';
-const accessKey = process.env.MINIO_ACCESS_KEY || 'minioadmin';
+// Cargar y auto-configurar variables de entorno
+let endpoint = process.env.MINIO_ENDPOINT || 'localhost';
+let port = parseInt(process.env.MINIO_PORT || '9000', 10);
+let useSSL = process.env.MINIO_USE_SSL === 'true';
+const accessKey = process.env.MINIO_ACCESS_KEY || 'escorts-data';
 const secretKey = process.env.MINIO_SECRET_KEY || 'minioadminpassword';
 const bucketName = process.env.MINIO_BUCKET_NAME || 'escort-media';
+const customPublicUrl = process.env.MINIO_PUBLIC_URL || 'https://console-sigae-ipds-minio.p1dgbf.easypanel.host/';
+
+// Auto-detectar host, puerto y SSL si se proporciona una URL pública externa (ej. EasyPanel)
+if (customPublicUrl && customPublicUrl.startsWith('http')) {
+  try {
+    const parsedUrl = new URL(customPublicUrl);
+    if (parsedUrl.hostname && !parsedUrl.hostname.includes('localhost') && !parsedUrl.hostname.includes('127.0.0.1')) {
+      endpoint = parsedUrl.hostname;
+      useSSL = parsedUrl.protocol === 'https:';
+      port = parsedUrl.port ? parseInt(parsedUrl.port, 10) : (useSSL ? 443 : 80);
+      console.log(`[MinIO-AutoConfig] Conectando a MinIO en -> Host: ${endpoint}, Port: ${port}, SSL: ${useSSL}`);
+    }
+  } catch (e) {
+    console.warn('[MinIO-AutoConfig] Error al parsear MINIO_PUBLIC_URL:', e.message);
+  }
+}
 
 let minioClient = null;
 let isMinioAvailable = false;
 
-try {
-  minioClient = new Minio.Client({
-    endPoint: endpoint,
-    port: port,
-    useSSL: useSSL,
-    accessKey: accessKey,
-    secretKey: secretKey
-  });
-} catch (err) {
-  console.warn('[MinIO] No se pudo inicializar el cliente de MinIO:', err.message);
+function createMinioClient() {
+  try {
+    return new Minio.Client({
+      endPoint: endpoint,
+      port: port,
+      useSSL: useSSL,
+      accessKey: accessKey,
+      secretKey: secretKey
+    });
+  } catch (err) {
+    console.warn('[MinIO] No se pudo inicializar cliente de MinIO:', err.message);
+    return null;
+  }
 }
+
+minioClient = createMinioClient();
 
 /**
  * Inicializa el bucket de MinIO con reintentos automáticos y configura la política de lectura pública.

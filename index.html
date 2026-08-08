@@ -1222,6 +1222,14 @@
 			const whatsappMsg = encodeURIComponent(`Hola ${escort.name}, vi tu perfil en CitasRD.app. ¿Tienes disponibilidad de servicio?`);
 			const whatsappLink = `https://wa.me/${whatsappClean}?text=${whatsappMsg}`;
 
+			const rateDisplay = (escort.hourlyRate && escort.hourlyRate > 0)
+				? `RD$ ${escort.hourlyRate} <small class="font-12 text-white opacity-75">/hr</small>`
+				: `<span class="font-13">A consultar</span>`;
+
+			const gridPriceDisplay = (escort.hourlyRate && escort.hourlyRate > 0)
+				? `RD$ ${escort.hourlyRate} /hr`
+				: `A consultar`;
+
 			container.innerHTML = `
 				<div class="dating-swipe-card" onclick="openDetailModal('${escort.id}')">
 					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" onerror="this.onerror=null; this.src='assets/images/escorts/female1.jpg';" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
@@ -1233,7 +1241,7 @@
 						</div>
 						<div class="d-flex justify-content-between align-items-end mb-1">
 							<h2 class="escort-profile-title">${escort.name}, ${escort.age}</h2>
-							<div class="escort-rate-tag">RD$ ${escort.hourlyRate} <small class="font-12 text-white opacity-75">/hr</small></div>
+							<div class="escort-rate-tag">${rateDisplay}</div>
 						</div>
 						<div class="font-15 font-w700 mb-1" style="color: #FFFFFF !important; text-shadow: 0 2px 4px rgba(0,0,0,0.9);">
 							<i class="fa-solid fa-location-dot me-1" style="color: #FF2A7A !important;"></i> ${escort.city} ${escort.zone ? '• ' + escort.zone : ''}
@@ -1270,6 +1278,7 @@
 				const hasStories = escort.stories && escort.stories.length > 0;
 				const statusColor = escort.isAvailable ? '#28a745' : '#dc3545';
 				const verifiedIcon = escort.isVerified ? '<i class="fa-solid fa-circle-check text-primary font-12 ms-1"></i>' : '';
+				const gPrice = (escort.hourlyRate && escort.hourlyRate > 0) ? `RD$ ${escort.hourlyRate} /hr` : 'A consultar';
 				const card = document.createElement('div');
 				card.className = 'badoo-card';
 				card.onclick = () => openDetailModal(escort.id);
@@ -1281,7 +1290,7 @@
 							<h4 class="badoo-name">${escort.name}, ${escort.age} ${verifiedIcon}</h4>
 						</div>
 						<div class="badoo-meta mb-1"><i class="fa-solid fa-location-dot me-1"></i>${escort.city} • ${escort.nationality || 'Dominicana'}</div>
-						<div class="badoo-price">RD$ ${escort.hourlyRate} /hr</div>
+						<div class="badoo-price">${gPrice}</div>
 					</div>
 				`;
 				container.appendChild(card);
@@ -1567,7 +1576,8 @@
 						<div class="row text-center">
 							<div class="col-4 border-end border-secondary">
 								<span class="text-white-50 font-11 d-block">Tarifa</span>
-								<strong class="font-16 text-primary">RD$ ${escort.hourlyRate}</strong>
+								<strong class="font-16 text-primary">${escort.hourlyRate && escort.hourlyRate > 0 ? 'RD$ ' + escort.hourlyRate : 'A consultar'}</strong>
+
 							</div>
 							<div class="col-4 border-end border-secondary">
 								<span class="text-white-50 font-11 d-block">Nacionalidad</span>

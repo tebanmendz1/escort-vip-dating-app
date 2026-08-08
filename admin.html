@@ -561,6 +561,17 @@
 			document.getElementById('pills-url-tab').classList.remove('active');
 		});
 
+		function appendImportDiagnostics(logBox, data) {
+			const storage = data.storage || {};
+			const status = storage.available ? 'DISPONIBLE' : 'NO DISPONIBLE';
+			logBox.innerHTML += `<div>[IMÁGENES] Detectadas: ${data.imageDiagnostics?.length || 0}; MinIO: ${data.persistentPhotosCount || 0}; respaldo local: ${data.localFallbackPhotosCount || 0}; fallidas: ${data.failedPhotosCount || 0}</div>`;
+			logBox.innerHTML += `<div class="${storage.available ? 'text-success' : 'text-warning'}">[MINIO] ${status} — ${storage.endpoint || '?'}:${storage.port || '?'} / ${storage.bucket || '?'}</div>`;
+			if (storage.lastError) logBox.innerHTML += `<div class="text-danger">[MINIO ERROR] ${String(storage.lastError).replace(/[<>&]/g, '')}</div>`;
+			(data.imageDiagnostics || []).filter(item => item.error).forEach((item, index) => {
+				logBox.innerHTML += `<div class="text-warning">[FOTO ${index + 1}] ${String(item.error).replace(/[<>&]/g, '')}</div>`;
+			});
+		}
+
 		// Scraper Submit Form Handler (URL)
 		document.getElementById('scraperForm').addEventListener('submit', async (e) => {
 			e.preventDefault();
@@ -595,6 +606,7 @@
 				alertBox.className = 'alert alert-success font-w600';
 				alertBox.classList.remove('d-none');
 				logBox.innerHTML += `<div class="text-success">[ÉXITO] Perfil registrado con ID: ${data.escort.id}</div>`;
+				appendImportDiagnostics(logBox, data);
 				document.getElementById('scrapeUrl').value = '';
 				loadEscortsTable();
 			} catch (err) {
@@ -649,6 +661,7 @@
 				alertBox.className = 'alert alert-success font-w600';
 				alertBox.classList.remove('d-none');
 				logBox.innerHTML += `<div class="text-success">[ÉXITO BYPASS] Perfil registrado con ID: ${data.escort.id}</div>`;
+				appendImportDiagnostics(logBox, data);
 				document.getElementById('scrapeHtmlContent').value = '';
 				loadEscortsTable();
 			} catch (err) {

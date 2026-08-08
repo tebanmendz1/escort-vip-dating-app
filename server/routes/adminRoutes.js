@@ -2,6 +2,7 @@ import express from 'express';
 import { db } from '../db.js';
 import { generateToken, authenticateToken } from '../middleware/auth.js';
 import { scrapeAndImportProfile, parseAndSaveProfileFromHtml } from '../services/scraperService.js';
+import { getMinioDiagnostics } from '../services/minioService.js';
 
 const router = express.Router();
 
@@ -27,6 +28,10 @@ function requireAdmin(req, res, next) {
     return res.status(403).json({ error: 'Acceso denegado. Se requieren permisos de Administrador.' });
   });
 }
+
+router.get('/storage-diagnostics', requireAdmin, (req, res) => {
+  res.json(getMinioDiagnostics());
+});
 
 // Cambiar contraseña de Admin
 router.post('/change-password', requireAdmin, (req, res) => {

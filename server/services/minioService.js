@@ -1,4 +1,5 @@
 import * as Minio from 'minio';
+import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 
@@ -9,25 +10,13 @@ let useSSL = process.env.MINIO_USE_SSL === 'true';
 const accessKey = process.env.MINIO_ACCESS_KEY || 'escorts-data';
 const secretKey = process.env.MINIO_SECRET_KEY || 'minioadminpassword';
 const bucketName = process.env.MINIO_BUCKET_NAME || 'escort-media';
-const customPublicUrl = process.env.MINIO_PUBLIC_URL || 'https://console-sigae-ipds-minio.p1dgbf.easypanel.host/';
-
-// Auto-detectar host, puerto y SSL si se proporciona una URL pública externa (ej. EasyPanel)
-if (customPublicUrl && customPublicUrl.startsWith('http')) {
-  try {
-    const parsedUrl = new URL(customPublicUrl);
-    if (parsedUrl.hostname && !parsedUrl.hostname.includes('localhost') && !parsedUrl.hostname.includes('127.0.0.1')) {
-      endpoint = parsedUrl.hostname;
-      useSSL = parsedUrl.protocol === 'https:';
-      port = parsedUrl.port ? parseInt(parsedUrl.port, 10) : (useSSL ? 443 : 80);
-      console.log(`[MinIO-AutoConfig] Conectando a MinIO en -> Host: ${endpoint}, Port: ${port}, SSL: ${useSSL}`);
-    }
-  } catch (e) {
-    console.warn('[MinIO-AutoConfig] Error al parsear MINIO_PUBLIC_URL:', e.message);
-  }
-}
+// La URL pública puede apuntar a la consola (puerto 9001), no a la API S3.
+// Por eso la conexión usa exclusivamente ENDPOINT/PORT/SSL.
+const customPublicUrl = process.env.MINIO_PUBLIC_URL || '';
 
 let minioClient = null;
 let isMinioAvailable = false;
+let lastMinioError = null;
 
 function createMinioClient() {
   try {
@@ -83,9 +72,11 @@ export async function initMinioBucket(maxRetries = 10, delayMs = 2000) {
 
       await minioClient.setBucketPolicy(bucketName, JSON.stringify(policy));
       isMinioAvailable = true;
+      lastMinioError = null;
       console.log(`[MinIO] Conectado exitosamente al bucket "${bucketName}" (${endpoint}:${port}) en intento ${attempt}.`);
       return true;
     } catch (err) {
+      lastMinioError = err.message;
       console.warn(`[MinIO] Intento de conexión ${attempt}/${maxRetries} falló (${err.message}). Reintentando en ${delayMs / 1000}s...`);
       if (attempt < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, delayMs));
@@ -98,12 +89,24 @@ export async function initMinioBucket(maxRetries = 10, delayMs = 2000) {
   return false;
 }
 
+export function getMinioDiagnostics() {
+  return { available: isMinioAvailable, endpoint, port, useSSL, bucket: bucketName,
+    publicUrlConfigured: Boolean(customPublicUrl), lastError: lastMinioError };
+}
+
 /**
  * Subir un Buffer a MinIO (o guardar localmente si MinIO no está disponible)
  */
 export async function uploadBufferToMinio(buffer, originalName, mimetype = 'image/jpeg', folder = 'photos') {
+  const result = await uploadBufferWithDiagnostics(buffer, originalName, mimetype, folder);
+  return result.url;
+}
+
+export async function uploadBufferWithDiagnostics(buffer, originalName, mimetype = 'image/jpeg', folder = 'photos', options = {}) {
   const sanitizedName = originalName ? originalName.replace(/[^a-zA-Z0-9.-]/g, '_') : 'media.jpg';
   const objectKey = `${folder}/${Date.now()}_${sanitizedName}`;
+
+  if (!isMinioAvailable && minioClient) await initMinioBucket(1, 0);
 
   if (isMinioAvailable && minioClient) {
     try {
@@ -113,21 +116,21 @@ export async function uploadBufferToMinio(buffer, originalName, mimetype = 'imag
       };
 
       await minioClient.putObject(bucketName, objectKey, buffer, buffer.length, metaData);
-
-      const customPublicUrl = process.env.MINIO_PUBLIC_URL;
-      let fullUrl;
-
-      if (customPublicUrl && !customPublicUrl.includes('localhost') && !customPublicUrl.includes('127.0.0.1') && !customPublicUrl.includes('minio:')) {
-        fullUrl = `${customPublicUrl.replace(/\/$/, '')}/${objectKey}`;
-      } else {
-        fullUrl = `/uploads/${objectKey}`;
-      }
+      const stat = await minioClient.statObject(bucketName, objectKey);
+      if (Number(stat.size) !== buffer.length) throw new Error(`Tamaño no coincide: ${stat.size}/${buffer.length}`);
+      const fullUrl = `/uploads/${objectKey}`;
 
       console.log(`[MinIO] Archivo subido con éxito: ${objectKey} -> URL: ${fullUrl}`);
-      return fullUrl;
+      return { url: fullUrl, storage: 'minio', objectKey, verified: true, bytes: buffer.length };
     } catch (err) {
+      lastMinioError = err.message;
       console.error(`[MinIO] Error al subir objeto "${objectKey}":`, err.message);
     }
+  }
+
+  if (options.allowLocalFallback === false) {
+    return { url: null, storage: 'failed', objectKey, verified: false, bytes: buffer.length,
+      error: lastMinioError || 'MinIO no disponible' };
   }
 
   // Fallback: guardar en el sistema de archivos local
@@ -141,7 +144,10 @@ export async function uploadBufferToMinio(buffer, originalName, mimetype = 'imag
   const localFilePath = path.join(folderPath, localFileName);
   fs.writeFileSync(localFilePath, buffer);
 
-  return `/uploads/${folder}/${localFileName}`;
+  const localUrl = `/uploads/${folder}/${localFileName}`;
+  console.warn(`[MinIO-Fallback] Guardado local: ${localUrl}. Requiere volumen persistente para sobrevivir reinicios.`);
+  return { url: localUrl, storage: 'local', objectKey: null, verified: fs.existsSync(localFilePath),
+    bytes: buffer.length, error: lastMinioError || 'MinIO no disponible' };
 }
 
 /**
@@ -271,7 +277,11 @@ export async function migrateExistingUploadsToMinio(db) {
       const folder = relPath.includes('/') ? relPath.split('/')[0] : 'photos';
       const filename = path.basename(filePath);
 
-      const minioUrl = await uploadBufferToMinio(buffer, filename, mimetype, folder);
+      const upload = await uploadBufferWithDiagnostics(buffer, filename, mimetype, folder, { allowLocalFallback: false });
+      if (upload.storage !== 'minio' || !upload.verified) {
+        throw new Error(upload.error || 'El archivo no fue verificado en MinIO');
+      }
+      const minioUrl = upload.url;
 
       // Variantes de URL en la base de datos
       urlMapping[`/uploads/${relPath}`] = minioUrl;
@@ -294,4 +304,3 @@ export async function migrateExistingUploadsToMinio(db) {
 
   console.log(`[MinIO-Migration] Migración finalizada con éxito. ${successCount}/${allFiles.length} archivos migrados a MinIO y eliminados de disco local.`);
 }
-

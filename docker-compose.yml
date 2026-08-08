@@ -10,6 +10,8 @@ services:
     environment:
       - PORT=3000
       - NODE_ENV=production
+      - PERSISTENT_DATA_DIR=/data
+      - UPLOADS_DIR=/data/uploads
       - DATABASE_URL=postgresql://escort_user:escort_password@postgres:5432/escort_db?schema=public
       - JWT_SECRET=super-secret-escort-vps-key
       - MINIO_ENDPOINT=minio
@@ -18,10 +20,12 @@ services:
       - MINIO_ACCESS_KEY=escorts-data
       - MINIO_SECRET_KEY=minioadminpassword
       - MINIO_BUCKET_NAME=escort-media
-      - MINIO_PUBLIC_URL=https://console-sigae-ipds-minio.p1dgbf.easypanel.host/
+      - MINIO_PUBLIC_URL=
     depends_on:
       - postgres
       - minio
+    volumes:
+      - app_data:/data
 
   postgres:
     image: postgres:16-alpine
@@ -53,4 +57,4 @@ services:
 volumes:
   postgres_data:
   minio_data:
-
+  app_data:

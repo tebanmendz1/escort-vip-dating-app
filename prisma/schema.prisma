@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -13,7 +13,7 @@ model Escort {
   passwordHash          String
   name                  String
   gender                String   // "FEMALE", "MALE", "TRANS", "NON_BINARY", "GAY", "LESBIAN", "BISEXUAL"
-  age                   Int
+  age                   Int?
   nationality           String?  @default("Mexicana")
   bodyType              String?  @default("Atlética")
   city                  String
@@ -22,7 +22,7 @@ model Escort {
   phone                 String
   whatsapp              String
   telegram              String?
-  hourlyRate            Float    @default(0)
+  hourlyRate            Float?
   currency              String   @default("DOP")
   isAvailable           Boolean  @default(true)
   isVerified            Boolean  @default(false)

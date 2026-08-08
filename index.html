@@ -1,8 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-	<!-- Adcash Library -->
+	<!-- Adcash Library & In-Page Push Ads -->
 	<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
+	<script type="text/javascript">
+	    if (typeof aclib !== 'undefined' && aclib.runInPagePush) {
+	        aclib.runInPagePush({
+	            zoneId: '11928722',
+	            maxAds: 2,
+	        });
+	    }
+	</script>
 
 	<!-- Title SEO -->
 	<title>CitasRD.app | Escorts VIP en República Dominicana | Directorio de Acompañantes 24h</title>

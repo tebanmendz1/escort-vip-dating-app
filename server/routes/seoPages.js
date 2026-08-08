@@ -120,8 +120,16 @@ Object.keys(SEO_LANDINGS).forEach(slug => {
       const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
-	<!-- Adcash Library -->
+	<!-- Adcash Library & In-Page Push Ads -->
 	<script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
+	<script type="text/javascript">
+	    if (typeof aclib !== 'undefined' && aclib.runInPagePush) {
+	        aclib.runInPagePush({
+	            zoneId: '11928722',
+	            maxAds: 2,
+	        });
+	    }
+	</script>
 
 	<title>${config.title}</title>
 	<meta charset="utf-8">

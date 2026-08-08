@@ -1488,7 +1488,7 @@
 
 				const photosHtml = allMedia.map((p, idx) => `
 					<div class="col-4 mb-2">
-						<img src="${p.url}" class="img-fluid rounded-3" style="height: 100px; width: 100%; object-fit: cover; cursor: pointer;" onclick="openLightboxFromDetail(${idx})" onerror="this.parentElement.style.display='none'">
+						<img src="${p.url}" class="img-fluid rounded-3" style="height: 100px; width: 100%; object-fit: cover; cursor: pointer;" onclick="openLightboxFromDetail(${idx})" onerror="this.onerror=null; this.src='assets/images/escorts/female1.jpg'">
 					</div>
 				`).join('');
 

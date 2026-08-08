@@ -101,7 +101,16 @@ export async function seedInitialData() {
   for (const escortData of initialEscorts) {
     const created = await db.createEscort(escortData);
     await db.addPhoto(created.id, created.avatarUrl, true);
-    await db.addPhoto(created.id, 'assets/images/escorts/female1.jpg', false);
+    
+    if (created.gender === 'FEMALE') {
+      await db.addPhoto(created.id, 'assets/images/escorts/female1.jpg', false);
+      await db.addPhoto(created.id, 'assets/images/escorts/female2.jpg', false);
+      await db.addPhoto(created.id, 'assets/images/escorts/female3.jpg', false);
+    } else if (created.gender === 'GAY') {
+      await db.addPhoto(created.id, 'assets/images/escorts/male1.jpg', false);
+    } else if (created.gender === 'TRANS') {
+      await db.addPhoto(created.id, 'assets/images/escorts/trans1.jpg', false);
+    }
 
     if (created.name === 'Valeria Deluxe' || created.name === 'Camila Rose') {
       await db.addStory(created.id, created.avatarUrl, 'IMAGE', '¡Hola amor! Disponible hoy en Piantini ✨');

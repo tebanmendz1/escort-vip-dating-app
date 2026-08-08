@@ -1,6 +1,8 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'escort-secret-key-change-in-production';
+function getSecret() {
+  return process.env.JWT_SECRET || 'escort-secret-key-change-in-production';
+}
 
 export function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -10,7 +12,7 @@ export function authenticateToken(req, res, next) {
     return res.status(401).json({ error: 'Acceso denegado. Token no proporcionado.' });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, getSecret(), (err, user) => {
     if (err) {
       return res.status(403).json({ error: 'Token inválido o expirado.' });
     }
@@ -20,5 +22,6 @@ export function authenticateToken(req, res, next) {
 }
 
 export function generateToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign(payload, getSecret(), { expiresIn: '30d' });
 }
+

@@ -127,7 +127,7 @@ export async function uploadBufferToMinio(buffer, originalName, mimetype = 'imag
  * Middleware Express para servir archivos de MinIO de forma transparente a través de /uploads/*
  */
 export async function serveMinioMedia(req, res, next) {
-  if (!isMinioAvailable || !minioClient) {
+  if (!minioClient) {
     return next();
   }
 
@@ -147,7 +147,7 @@ export async function serveMinioMedia(req, res, next) {
     res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'public, max-age=31536000');
 
-    dataStream.pipe(res);
+    return dataStream.pipe(res);
   } catch (err) {
     // Si el archivo no está en MinIO, pasa al middleware estático local
     return next();

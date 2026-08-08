@@ -390,30 +390,52 @@
 			loadConfigForm();
 		}
 
+		function handleExpiredToken(msg) {
+			localStorage.removeItem('escort_admin_token');
+			adminToken = null;
+			document.getElementById('adminLoginForm').classList.remove('d-none');
+			document.getElementById('adminMainContent').classList.add('d-none');
+			document.getElementById('adminLogoutBtn').classList.add('d-none');
+			const loginAlert = document.getElementById('loginAlert');
+			loginAlert.textContent = msg || 'Tu sesión de administrador ha expirado o el token es inválido. Por favor inicia sesión de nuevo.';
+			loginAlert.classList.remove('d-none');
+		}
+
 		async function loadEscortsTable() {
 			try {
 				const res = await fetch('/api/admin/escorts', {
 					headers: { 'Authorization': `Bearer ${adminToken}` }
 				});
-				const escorts = await res.json();
+				const data = await res.json();
 
+				if (res.status === 401 || res.status === 403 || (data && data.error && (data.error.includes('Token') || data.error.includes('denegado')))) {
+					handleExpiredToken(data.error);
+					return;
+				}
+
+				const escorts = Array.isArray(data) ? data : [];
 				const tbody = document.getElementById('escortsTableBody');
 				tbody.innerHTML = '';
+
+				if (escorts.length === 0) {
+					tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-white-50">No hay perfiles registrados aún.</td></tr>';
+					return;
+				}
 
 				escorts.forEach(escort => {
 					const tr = document.createElement('tr');
 					tr.innerHTML = `
 						<td>
 							<div class="d-flex align-items-center gap-2">
-								<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+								<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" onerror="this.onerror=null; this.src='assets/images/escorts/female1.jpg';" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
 								<div>
 									<strong class="text-white">${escort.name}</strong><br>
 									<small class="text-white-50">${escort.email}</small>
 								</div>
 							</div>
 						</td>
-						<td><span class="badge bg-secondary">${escort.gender}</span></td>
-						<td>${escort.city}</td>
+						<td><span class="badge bg-secondary">${escort.gender || 'FEMALE'}</span></td>
+						<td>${escort.city || 'Santo Domingo'}</td>
 						<td>
 							<div class="form-check form-switch">
 								<input class="form-check-input" type="checkbox" ${escort.isVerified ? 'checked' : ''} onchange="toggleVerify('${escort.id}', this.checked)">
@@ -434,7 +456,7 @@
 								<button class="btn btn-sm ${escort.isBlocked ? 'btn-outline-success' : 'btn-outline-warning'}" onclick="toggleBlock('${escort.id}', ${!escort.isBlocked})">
 									${escort.isBlocked ? 'Desbloquear' : 'Bloquear'}
 								</button>
-								<button class="btn btn-sm btn-danger font-w600" onclick="deleteEscortProfile('${escort.id}', '${escort.name.replace(/'/g, "\\'")}')" title="Eliminar Perfil Definitivamente">
+								<button class="btn btn-sm btn-danger font-w600" onclick="deleteEscortProfile('${escort.id}', '${(escort.name || '').replace(/'/g, "\\'")}')" title="Eliminar Perfil Definitivamente">
 									<i class="fa-solid fa-trash"></i>
 								</button>
 							</div>
@@ -561,6 +583,12 @@
 					body: JSON.stringify({ targetUrl, city, gender })
 				});
 				const data = await res.json();
+
+				if (res.status === 401 || res.status === 403 || (data && data.error && data.error.includes('Token'))) {
+					handleExpiredToken(data.error);
+					return;
+				}
+
 				if (!res.ok) throw new Error(data.error || 'Error al extraer perfil');
 
 				alertBox.textContent = `¡Éxito! Perfil "${data.escort.name}" importado correctamente con ${data.importedPhotosCount} fotos.`;
@@ -608,6 +636,11 @@
 				} else {
 					const text = await res.text();
 					throw new Error(`Respuesta no válida del servidor (HTTP ${res.status}). El HTML pegado puede ser demasiado grande o la sesión de Admin expiró.`);
+				}
+
+				if (res.status === 401 || res.status === 403 || (data && data.error && data.error.includes('Token'))) {
+					handleExpiredToken(data.error);
+					return;
 				}
 
 				if (!res.ok) throw new Error(data.error || 'Error al procesar HTML');

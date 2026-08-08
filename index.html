@@ -1216,7 +1216,7 @@
 
 			container.innerHTML = `
 				<div class="dating-swipe-card" onclick="openDetailModal('${escort.id}')">
-					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
+					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" onerror="this.onerror=null; this.src='assets/images/escorts/female1.jpg';" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
 					${storyBadge}
 					<div class="card-overlay-gradient">
 						<div class="d-flex align-items-center gap-1 mb-1">
@@ -1266,7 +1266,7 @@
 				card.className = 'badoo-card';
 				card.onclick = () => openDetailModal(escort.id);
 				card.innerHTML = `
-					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
+					<img src="${escort.avatarUrl || 'assets/images/escorts/female1.jpg'}" onerror="this.onerror=null; this.src='assets/images/escorts/female1.jpg';" class="${hasStories ? 'has-story-ring' : ''}" alt="${escort.name}">
 					<div class="badoo-overlay">
 						<div class="d-flex align-items-center gap-1 mb-1">
 							<span style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor};"></span>

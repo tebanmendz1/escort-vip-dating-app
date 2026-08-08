@@ -26,43 +26,55 @@ try {
 }
 
 /**
- * Inicializa el bucket de MinIO y configura la política de lectura pública para las imágenes.
+ * Inicializa el bucket de MinIO con reintentos automáticos y configura la política de lectura pública.
  */
-export async function initMinioBucket() {
-  if (!minioClient) {
-    console.warn('[MinIO] Cliente no disponible. Se utilizará almacenamiento local como respaldo.');
-    return false;
-  }
+export async function initMinioBucket(maxRetries = 10, delayMs = 2000) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      if (!minioClient) {
+        minioClient = new Minio.Client({
+          endPoint: endpoint,
+          port: port,
+          useSSL: useSSL,
+          accessKey: accessKey,
+          secretKey: secretKey
+        });
+      }
 
-  try {
-    const exists = await minioClient.bucketExists(bucketName);
-    if (!exists) {
-      await minioClient.makeBucket(bucketName, 'us-east-1');
-      console.log(`[MinIO] Bucket "${bucketName}" creado con éxito.`);
+      const exists = await minioClient.bucketExists(bucketName);
+      if (!exists) {
+        await minioClient.makeBucket(bucketName, 'us-east-1');
+        console.log(`[MinIO] Bucket "${bucketName}" creado con éxito.`);
+      }
+
+      // Configurar política de lectura pública para servir imágenes directamente
+      const policy = {
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Effect: 'Allow',
+            Principal: { AWS: ['*'] },
+            Action: ['s3:GetObject'],
+            Resource: [`arn:aws:s3:::${bucketName}/*`]
+          }
+        ]
+      };
+
+      await minioClient.setBucketPolicy(bucketName, JSON.stringify(policy));
+      isMinioAvailable = true;
+      console.log(`[MinIO] Conectado exitosamente al bucket "${bucketName}" (${endpoint}:${port}) en intento ${attempt}.`);
+      return true;
+    } catch (err) {
+      console.warn(`[MinIO] Intento de conexión ${attempt}/${maxRetries} falló (${err.message}). Reintentando en ${delayMs / 1000}s...`);
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
     }
-
-    // Configurar política de lectura pública para servir imágenes directamente
-    const policy = {
-      Version: '2012-10-17',
-      Statement: [
-        {
-          Effect: 'Allow',
-          Principal: { AWS: ['*'] },
-          Action: ['s3:GetObject'],
-          Resource: [`arn:aws:s3:::${bucketName}/*`]
-        }
-      ]
-    };
-
-    await minioClient.setBucketPolicy(bucketName, JSON.stringify(policy));
-    isMinioAvailable = true;
-    console.log(`[MinIO] Conectado exitosamente al bucket "${bucketName}" (${endpoint}:${port}).`);
-    return true;
-  } catch (err) {
-    console.warn(`[MinIO] Advertencia al conectar con MinIO (${err.message}). Usando fallback local.`);
-    isMinioAvailable = false;
-    return false;
   }
+
+  console.warn('[MinIO] No se pudo conectar a MinIO tras varios intentos. Se utilizará almacenamiento local como respaldo.');
+  isMinioAvailable = false;
+  return false;
 }
 
 /**

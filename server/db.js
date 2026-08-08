@@ -526,5 +526,84 @@ export const db = {
       saveJsonStore(store);
       console.log('[DB] URLs de imágenes en base de datos actualizadas tras migración a MinIO.');
     }
+  },
+
+  async repairBrokenMediaUrls() {
+    const store = loadJsonStore();
+    let updated = false;
+
+    const fixUrl = (url) => {
+      if (!url || typeof url !== 'string') return url;
+      if (url.includes('localhost:9000') || url.includes('127.0.0.1:9000') || url.includes('minio:9000')) {
+        const parts = url.split('/escort-media/');
+        if (parts.length > 1) {
+          return `/uploads/${parts[1]}`;
+        }
+      }
+      return url;
+    };
+
+    if (prisma) {
+      try {
+        const escorts = await prisma.escort.findMany({ select: { id: true, avatarUrl: true } });
+        for (const e of escorts) {
+          const fixed = fixUrl(e.avatarUrl);
+          if (fixed !== e.avatarUrl) {
+            await prisma.escort.update({ where: { id: e.id }, data: { avatarUrl: fixed } });
+          }
+        }
+        const photos = await prisma.photo.findMany({ select: { id: true, url: true } });
+        for (const p of photos) {
+          const fixed = fixUrl(p.url);
+          if (fixed !== p.url) {
+            await prisma.photo.update({ where: { id: p.id }, data: { url: fixed } });
+          }
+        }
+        const stories = await prisma.story.findMany({ select: { id: true, url: true } });
+        for (const s of stories) {
+          const fixed = fixUrl(s.url);
+          if (fixed !== s.url) {
+            await prisma.story.update({ where: { id: s.id }, data: { url: fixed } });
+          }
+        }
+      } catch (err) {
+        console.warn('[DB] Reparación de URLs en Prisma omitida:', err.message);
+      }
+    }
+
+    if (store.escorts) {
+      store.escorts.forEach(e => {
+        const fixed = fixUrl(e.avatarUrl);
+        if (fixed !== e.avatarUrl) {
+          e.avatarUrl = fixed;
+          updated = true;
+        }
+      });
+    }
+
+    if (store.photos) {
+      store.photos.forEach(p => {
+        const fixed = fixUrl(p.url);
+        if (fixed !== p.url) {
+          p.url = fixed;
+          updated = true;
+        }
+      });
+    }
+
+    if (store.stories) {
+      store.stories.forEach(s => {
+        const fixed = fixUrl(s.url);
+        if (fixed !== s.url) {
+          s.url = fixed;
+          updated = true;
+        }
+      });
+    }
+
+    if (updated) {
+      saveJsonStore(store);
+      console.log('[DB-Repair] URLs de localhost:9000 convertidas exitosamente a rutas relativas /uploads/...');
+    }
   }
 };

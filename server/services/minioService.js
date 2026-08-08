@@ -81,9 +81,16 @@ export async function uploadBufferToMinio(buffer, originalName, mimetype = 'imag
 
       await minioClient.putObject(bucketName, objectKey, buffer, buffer.length, metaData);
 
-      const publicBaseUrl = process.env.MINIO_PUBLIC_URL || `http://${endpoint}:${port}/${bucketName}`;
-      const fullUrl = `${publicBaseUrl}/${objectKey}`;
-      console.log(`[MinIO] Archivo subido con éxito: ${objectKey}`);
+      const customPublicUrl = process.env.MINIO_PUBLIC_URL;
+      let fullUrl;
+
+      if (customPublicUrl && !customPublicUrl.includes('localhost') && !customPublicUrl.includes('127.0.0.1') && !customPublicUrl.includes('minio:')) {
+        fullUrl = `${customPublicUrl.replace(/\/$/, '')}/${objectKey}`;
+      } else {
+        fullUrl = `/uploads/${objectKey}`;
+      }
+
+      console.log(`[MinIO] Archivo subido con éxito: ${objectKey} -> URL: ${fullUrl}`);
       return fullUrl;
     } catch (err) {
       console.error(`[MinIO] Error al subir objeto "${objectKey}":`, err.message);
@@ -102,6 +109,49 @@ export async function uploadBufferToMinio(buffer, originalName, mimetype = 'imag
   fs.writeFileSync(localFilePath, buffer);
 
   return `/uploads/${folder}/${localFileName}`;
+}
+
+/**
+ * Middleware Express para servir archivos de MinIO de forma transparente a través de /uploads/*
+ */
+export async function serveMinioMedia(req, res, next) {
+  if (!isMinioAvailable || !minioClient) {
+    return next();
+  }
+
+  const relPath = req.path.replace(/^\//, '');
+  if (!relPath) return next();
+
+  try {
+    const dataStream = await minioClient.getObject(bucketName, relPath);
+
+    let contentType = 'image/jpeg';
+    if (relPath.endsWith('.png')) contentType = 'image/png';
+    else if (relPath.endsWith('.webp')) contentType = 'image/webp';
+    else if (relPath.endsWith('.gif')) contentType = 'image/gif';
+    else if (relPath.endsWith('.mp4')) contentType = 'video/mp4';
+    else if (relPath.endsWith('.webm')) contentType = 'video/webm';
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=31536000');
+
+    dataStream.pipe(res);
+  } catch (err) {
+    // Si el archivo no está en MinIO, pasa al middleware estático local
+    return next();
+  }
+}
+
+/**
+ * Repara automáticamente cualquier URL que haya quedado guardada con localhost:9000
+ */
+export async function repairLocalhostUrls(db) {
+  if (!db || typeof db.repairBrokenMediaUrls !== 'function') return;
+  try {
+    await db.repairBrokenMediaUrls();
+  } catch (err) {
+    console.error('[MinIO-Repair] Error al reparar URLs:', err.message);
+  }
 }
 
 /**

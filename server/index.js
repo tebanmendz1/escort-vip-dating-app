@@ -12,8 +12,9 @@ import adminRoutes from './routes/adminRoutes.js';
 import seoRoutes from './routes/seoRoutes.js';
 import seoPages from './routes/seoPages.js';
 import { seedInitialData } from './seed.js';
-import { initMinioBucket, migrateExistingUploadsToMinio } from './services/minioService.js';
+import { initMinioBucket, migrateExistingUploadsToMinio, serveMinioMedia, repairLocalhostUrls } from './services/minioService.js';
 import { db } from './db.js';
+
 
 
 dotenv.config();
@@ -48,7 +49,7 @@ const uploadsDir = process.env.UPLOADS_DIR || (fs.existsSync('/data/uploads') ? 
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
+app.use('/uploads', serveMinioMedia, express.static(uploadsDir, { maxAge: '7d' }));
 app.use('/assets', express.static(path.join(rootDir, 'assets'), { maxAge: '7d' }));
 
 // Mount SEO Routes (Robots.txt & Sitemap.xml & Aggressive Landings)
@@ -84,6 +85,13 @@ app.listen(PORT, async () => {
   console.log(`http://localhost:${PORT}`);
   console.log(`====================================================`);
   
+  // Reparar URLs que hayan quedado en localhost:9000
+  try {
+    await repairLocalhostUrls(db);
+  } catch (err) {
+    console.error('Error al reparar URLs:', err);
+  }
+
   // Inicializar almacenamiento MinIO y migrar imágenes existentes
   try {
     const initialized = await initMinioBucket();

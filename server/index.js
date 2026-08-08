@@ -12,8 +12,12 @@ import adminRoutes from './routes/adminRoutes.js';
 import seoRoutes from './routes/seoRoutes.js';
 import seoPages from './routes/seoPages.js';
 import { seedInitialData } from './seed.js';
+import { initMinioBucket, migrateExistingUploadsToMinio } from './services/minioService.js';
+import { db } from './db.js';
+
 
 dotenv.config();
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,6 +84,16 @@ app.listen(PORT, async () => {
   console.log(`http://localhost:${PORT}`);
   console.log(`====================================================`);
   
+  // Inicializar almacenamiento MinIO y migrar imágenes existentes
+  try {
+    const initialized = await initMinioBucket();
+    if (initialized) {
+      await migrateExistingUploadsToMinio(db);
+    }
+  } catch (err) {
+    console.error('Error al inicializar o migrar imágenes en MinIO:', err);
+  }
+
   // Seed initial demo escorts
   try {
     await seedInitialData();
@@ -87,3 +101,4 @@ app.listen(PORT, async () => {
     console.error('Error al sembrar datos iniciales:', err);
   }
 });
+

@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { db } from '../db.js';
+import { uploadBufferToMinio } from './minioService.js';
+
 
 /**
  * Genera un Watermark SVG colocado estratégicamente en el CENTRO de la imagen (donde Skokka estampa su logo)
@@ -114,23 +116,16 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
     const { width, height } = metadata;
 
     if (width && height && height > 100) {
-      const uploadsDir = process.env.UPLOADS_DIR || (fs.existsSync('/data/uploads') ? '/data/uploads' : path.join(process.cwd(), 'server', 'uploads'));
-      const dirPath = path.join(uploadsDir, 'scraped');
-      if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-      }
-
       const filename = `escort_${escortId}_${index + 1}_${Date.now()}.jpg`;
-      const filePath = path.join(dirPath, filename);
-
       const watermarkSvg = createWatermarkSvg(width, height);
 
-      await sharp(buffer)
+      const watermarkedBuffer = await sharp(buffer)
         .composite([{ input: Buffer.from(watermarkSvg), top: 0, left: 0 }])
         .jpeg({ quality: 93 })
-        .toFile(filePath);
+        .toBuffer();
 
-      return `uploads/scraped/${filename}`;
+      const mediaUrl = await uploadBufferToMinio(watermarkedBuffer, filename, 'image/jpeg', 'scraped');
+      return mediaUrl;
     }
 
     return null;

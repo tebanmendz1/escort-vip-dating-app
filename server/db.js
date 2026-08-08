@@ -466,5 +466,65 @@ export const db = {
     store.adminConfig = { ...store.adminConfig, ...updateData };
     saveJsonStore(store);
     return store.adminConfig;
+  },
+
+  async updateMediaUrlsAfterMigration(urlMap) {
+    if (!urlMap || Object.keys(urlMap).length === 0) return;
+
+    if (prisma) {
+      try {
+        for (const [oldUrl, newUrl] of Object.entries(urlMap)) {
+          await prisma.escort.updateMany({
+            where: { avatarUrl: oldUrl },
+            data: { avatarUrl: newUrl }
+          });
+          await prisma.photo.updateMany({
+            where: { url: oldUrl },
+            data: { url: newUrl }
+          });
+          await prisma.story.updateMany({
+            where: { url: oldUrl },
+            data: { url: newUrl }
+          });
+        }
+      } catch (e) {
+        console.warn('[DB] Error actualizando URLs en Prisma tras migración:', e.message);
+      }
+    }
+
+    const store = loadJsonStore();
+    let updated = false;
+
+    if (store.escorts) {
+      store.escorts.forEach(e => {
+        if (e.avatarUrl && urlMap[e.avatarUrl]) {
+          e.avatarUrl = urlMap[e.avatarUrl];
+          updated = true;
+        }
+      });
+    }
+
+    if (store.photos) {
+      store.photos.forEach(p => {
+        if (p.url && urlMap[p.url]) {
+          p.url = urlMap[p.url];
+          updated = true;
+        }
+      });
+    }
+
+    if (store.stories) {
+      store.stories.forEach(s => {
+        if (s.url && urlMap[s.url]) {
+          s.url = urlMap[s.url];
+          updated = true;
+        }
+      });
+    }
+
+    if (updated) {
+      saveJsonStore(store);
+      console.log('[DB] URLs de imágenes en base de datos actualizadas tras migración a MinIO.');
+    }
   }
 };

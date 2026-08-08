@@ -5,28 +5,13 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { db } from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { uploadBufferToMinio, deleteFromMinio } from '../services/minioService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, 'escort-media-' + uniqueSuffix + ext);
-  }
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 50 * 1024 * 1024 }, // Max 50MB for video/images
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
@@ -94,10 +79,10 @@ router.post('/photos', authenticateToken, upload.single('media'), async (req, re
     let mediaType = 'IMAGE';
 
     if (req.file) {
-      mediaUrl = `/uploads/${req.file.filename}`;
       if (req.file.mimetype.startsWith('video/')) {
         mediaType = 'VIDEO';
       }
+      mediaUrl = await uploadBufferToMinio(req.file.buffer, req.file.originalname, req.file.mimetype, 'photos');
     } else if (req.body.mediaType) {
       mediaType = req.body.mediaType;
     }
@@ -129,10 +114,10 @@ router.post('/stories', authenticateToken, upload.single('media'), async (req, r
     const caption = req.body.caption || '';
 
     if (req.file) {
-      mediaUrl = `/uploads/${req.file.filename}`;
       if (req.file.mimetype.startsWith('video/')) {
         mediaType = 'VIDEO';
       }
+      mediaUrl = await uploadBufferToMinio(req.file.buffer, req.file.originalname, req.file.mimetype, 'stories');
     } else if (req.body.mediaType) {
       mediaType = req.body.mediaType;
     }
@@ -153,6 +138,13 @@ router.post('/stories', authenticateToken, upload.single('media'), async (req, r
 router.delete('/stories/:id', authenticateToken, async (req, res) => {
   try {
     const escortId = req.user.id;
+    const escort = await db.getEscortById(escortId);
+    if (escort && escort.stories) {
+      const story = escort.stories.find(s => s.id === req.params.id);
+      if (story && story.url) {
+        await deleteFromMinio(story.url);
+      }
+    }
     await db.deleteStory(req.params.id, escortId);
     return res.json({ success: true });
   } catch (error) {
@@ -182,6 +174,13 @@ router.delete('/photos/:id', authenticateToken, async (req, res) => {
   try {
     const escortId = req.user.id;
     const photoId = req.params.id;
+    const escort = await db.getEscortById(escortId);
+    if (escort && escort.photos) {
+      const photo = escort.photos.find(p => p.id === photoId);
+      if (photo && photo.url) {
+        await deleteFromMinio(photo.url);
+      }
+    }
     await db.deletePhoto(photoId, escortId);
     return res.json({ success: true });
   } catch (error) {

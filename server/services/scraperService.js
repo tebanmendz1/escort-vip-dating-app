@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { db } from '../db.js';
-import { uploadBufferToMinio } from './minioService.js';
+import { uploadBufferWithDiagnostics, getMinioDiagnostics } from './minioService.js';
 
 
 /**
@@ -106,7 +106,7 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
 
     if (!res.ok) {
       console.warn(`[Scraper] HTTP ${res.status} al descargar foto ${index + 1}: ${fetchUrl}`);
-      return null;
+      return { sourceUrl: fetchUrl, url: null, storage: 'failed', verified: false, error: `HTTP ${res.status}` };
     }
 
     const buffer = Buffer.from(await res.arrayBuffer());
@@ -124,14 +124,14 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
         .jpeg({ quality: 93 })
         .toBuffer();
 
-      const mediaUrl = await uploadBufferToMinio(watermarkedBuffer, filename, 'image/jpeg', 'scraped');
-      return mediaUrl;
+      const upload = await uploadBufferWithDiagnostics(watermarkedBuffer, filename, 'image/jpeg', 'scraped');
+      return { sourceUrl: fetchUrl, ...upload };
     }
 
-    return null;
+    return { sourceUrl: fetchUrl, url: null, storage: 'failed', verified: false, error: 'Dimensiones de imagen inválidas' };
   } catch (err) {
     console.error(`[Scraper] Error al estampar marca de agua central ESCORTSVIP.DO en imagen ${index + 1}:`, err.message);
-    return null;
+    return { sourceUrl: imageUrl, url: null, storage: 'failed', verified: false, error: err.message };
   }
 }
 
@@ -323,13 +323,13 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   let nickname = $('[data-testid="ad-detail-nickname"]').text().trim();
   let fullTitle = $('h1[data-testid="ad-detail-title"], h1').first().text().trim();
   
-  let name = nickname || fullTitle || $('title').text().split('-')[0].trim() || 'Modelo VIP';
+  let name = nickname || fullTitle || $('title').text().split('-')[0].trim() || '';
   name = name.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').trim();
-  if (!name || name.length < 2) name = 'Yesica VIP';
+  if (name.length < 2) name = '';
   if (name.length > 25) name = name.substring(0, 25);
 
   // 2. Extraer Edad
-  let age = 23;
+  let age = null;
   const ageElementText = $('[data-testid="ad-detail-age"]').text().trim();
   const ageMatch = ageElementText.match(/(\d{2})/) || html.match(/(\d{2})\s*(años|years)/i);
   if (ageMatch) {
@@ -348,22 +348,22 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
 
   if (!phoneStr) {
     const rawPhoneMatch = html.match(/(\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/);
-    phoneStr = rawPhoneMatch ? rawPhoneMatch[0].replace(/\D/g, '') : '8296458134';
+    phoneStr = rawPhoneMatch ? rawPhoneMatch[0].replace(/\D/g, '') : '';
   }
 
   const cleanPhone = phoneStr.length === 10 ? `1${phoneStr}` : phoneStr;
-  const whatsapp = `+${cleanPhone}`;
+  const whatsapp = cleanPhone ? `+${cleanPhone}` : '';
 
   // 4. Extraer Ciudad
   const cityFromAd = $('[data-testid="ad-detail-city"]').text().trim().replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '').trim();
-  const city = cityFromAd || customCity || 'Santiago';
+  const city = cityFromAd || customCity || '';
 
   // 5. Extraer Biografía Limpia
   let rawBio = $('[data-testid="ad-detail-description"]').text().trim();
   if (!rawBio) {
     rawBio = $('.listing-description, .description, p').text().trim();
   }
-  let cleanBio = rawBio.substring(0, 400) || `Hola amor, recién llegada. Escríbeme y disfruta conmigo una noche inolvidable en ${city}.`;
+  let cleanBio = rawBio.substring(0, 400) || '';
 
   // 6. Extraer Secciones Estructuradas (Servicios, A quién atiendes, Lugar, Métodos de Pago, Características)
   let extractedServices = [];
@@ -422,17 +422,15 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   }
 
   // 7. Extraer Nacionalidad
-  let nationality = 'Dominicana';
+  let nationality = '';
   const natTag = aboutYou.find(t => t.includes('Colombiana') || t.includes('Venezolana') || t.includes('Dominicana'));
   if (natTag) {
-    nationality = natTag.replace(/[^\w]/g, '').trim() || 'Colombiana';
+    nationality = natTag.replace(/[^\wáéíóúÁÉÍÓÚñÑ]/g, '').trim();
   } else if (html.includes('Colombiana')) {
     nationality = 'Colombiana';
   }
 
-  const servicesFormatted = extractedServices.length > 0
-    ? extractedServices.join(', ')
-    : 'Acompañante VIP, Trato de Novios, Cenas, Eventos';
+  const servicesFormatted = extractedServices.join(', ');
 
   const extraDetails = [];
   if (aboutYou.length > 0) extraDetails.push(`✨ Características: ${aboutYou.join(', ')}`);
@@ -459,21 +457,25 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
       if (!rawPhotos.includes(p)) rawPhotos.push(p);
     });
   }
+  rawPhotos = rawPhotos.slice(0, 15);
 
   console.log(`[Scraper] 📸 Total de fotos candidatas encontradas (${rawPhotos.length}):`, rawPhotos);
 
   const escortId = `scraped_${Date.now()}`;
   const defaultPassword = await bcrypt.hash('123456', 10);
-  const email = `${name.toLowerCase().replace(/\s+/g, '')}_${Date.now()}@imported.citasrd.app`;
+  const emailPrefix = name.toLowerCase().replace(/\s+/g, '') || 'perfil';
+  const email = `${emailPrefix}_${Date.now()}@imported.citasrd.app`;
 
   const watermarkedPhotos = [];
+  const imageDiagnostics = [];
   for (let i = 0; i < rawPhotos.length; i++) {
-    const cleanUrl = await downloadAndWatermarkPhoto(rawPhotos[i], escortId, i);
-    if (cleanUrl) watermarkedPhotos.push(cleanUrl);
+    const result = await downloadAndWatermarkPhoto(rawPhotos[i], escortId, i);
+    imageDiagnostics.push(result);
+    if (result?.url) watermarkedPhotos.push(result.url);
   }
 
   // 3.5. Extraer Tarifa / Precio Real
-  let hourlyRate = 0;
+  let hourlyRate = null;
   const priceElementText = $('[data-testid="ad-detail-price"], .price, .price-tag').text().trim();
   const priceMatch = priceElementText.match(/(?:RD\$|\$|RD)?\s*([\d,.]+)/i)
                   || rawBio.match(/(?:RD\$|\$|RD)\s*([\d,.]+)/i)
@@ -485,7 +487,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     }
   }
 
-  const avatarUrl = watermarkedPhotos.length > 0 ? watermarkedPhotos[0] : 'assets/images/escorts/female1.jpg';
+  const avatarUrl = watermarkedPhotos[0] || null;
 
   // Crear modelo en Base de Datos
   const escort = await db.createEscort({
@@ -496,7 +498,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     age,
     nationality,
     city,
-    zone: 'Centro',
+    zone: '',
     phone: whatsapp,
     whatsapp,
     hourlyRate: hourlyRate,
@@ -505,8 +507,8 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     bio: fullBio,
     avatarUrl,
     isAvailable: true,
-    isVerified: true,
-    isFeatured: true
+    isVerified: false,
+    isFeatured: false
   });
 
   // Registrar fotos en la galería de la base de datos
@@ -519,6 +521,11 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     success: true,
     escort,
     importedPhotosCount: watermarkedPhotos.length,
+    persistentPhotosCount: imageDiagnostics.filter(p => p?.storage === 'minio' && p.verified).length,
+    localFallbackPhotosCount: imageDiagnostics.filter(p => p?.storage === 'local').length,
+    failedPhotosCount: imageDiagnostics.filter(p => !p?.url).length,
+    storage: getMinioDiagnostics(),
+    imageDiagnostics,
     extractedServices,
     photos: watermarkedPhotos
   };

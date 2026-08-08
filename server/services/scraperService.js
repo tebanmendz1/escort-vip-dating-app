@@ -90,26 +90,49 @@ function createWatermarkSvg(width, height) {
 /**
  * Descarga y estampa nuestra marca de agua oficial (ESCORTSVIP.DO) tapando el logo central de Skokka
  */
-async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
+async function downloadAndWatermarkPhoto(imageUrl, escortId, index, targetUrl) {
   try {
     let fetchUrl = imageUrl;
     if (fetchUrl.startsWith('//')) fetchUrl = `https:${fetchUrl}`;
 
-    const res = await fetch(fetchUrl, {
-      headers: {
+    const requestHeaders = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Referer': 'https://do.skokka.com/',
-        'Origin': 'https://do.skokka.com',
-        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
-      }
-    });
+        'Referer': targetUrl || 'https://do.skokka.com/',
+        'Accept': 'image/avif,image/webp,image/apng,image/jpeg,image/png,image/*;q=0.8,*/*;q=0.1',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.7',
+        'Sec-Fetch-Dest': 'image',
+        'Sec-Fetch-Mode': 'no-cors',
+        'Sec-Fetch-Site': 'same-origin'
+    };
+
+    let res = await fetch(fetchUrl, { headers: requestHeaders, redirect: 'follow' });
+    // Algunos CDN rechazan el hotlink cuando reciben Referer. Reintentar sin él.
+    if (res.status === 403) {
+      const { Referer, ...headersWithoutReferer } = requestHeaders;
+      res = await fetch(fetchUrl, { headers: headersWithoutReferer, redirect: 'follow' });
+    }
 
     if (!res.ok) {
       console.warn(`[Scraper] HTTP ${res.status} al descargar foto ${index + 1}: ${fetchUrl}`);
       return { sourceUrl: fetchUrl, url: null, storage: 'failed', verified: false, error: `HTTP ${res.status}` };
     }
 
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    const isBinaryImage = contentType === 'application/octet-stream';
+    if ((!contentType.startsWith('image/') && !isBinaryImage) || contentType.includes('svg')) {
+      return { sourceUrl: fetchUrl, url: null, storage: 'rejected', verified: false,
+        error: `Respuesta no es una foto (${contentType || 'sin Content-Type'})` };
+    }
+
+    const contentLength = Number(res.headers.get('content-length') || 0);
+    if (contentLength > 25 * 1024 * 1024) {
+      return { sourceUrl: fetchUrl, url: null, storage: 'rejected', verified: false, error: 'Imagen supera 25 MB' };
+    }
+
     const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length < 512) {
+      return { sourceUrl: fetchUrl, url: null, storage: 'rejected', verified: false, error: 'Respuesta de imagen vacía' };
+    }
     
     // Leer dimensiones de la imagen con Sharp
     const metadata = await sharp(buffer).metadata();
@@ -138,7 +161,7 @@ async function downloadAndWatermarkPhoto(imageUrl, escortId, index) {
 /**
  * Extractor especializado de Fotos para Skokka (Escaneo exhaustivo multi-pase)
  */
-function extractSkokkaPhotos(html, targetUrl) {
+export function extractSkokkaPhotos(html, targetUrl) {
   const photos = [];
 
   function pushPhoto(rawUrl) {
@@ -150,12 +173,17 @@ function extractSkokkaPhotos(html, targetUrl) {
       .replace(/["']/g, '')
       .replace(/&#x27;/g, '')
       .replace(/&quot;/g, '')
+      .replace(/&amp;/gi, '&')
+      .replace(/&#38;/g, '&')
       .trim();
+
+    // srcset puede contener descriptor de tamaño al final (" 1080w").
+    clean = clean.split(/\s+(?:\d+(?:\.\d+)?[wx])$/i)[0].trim();
 
     // 2. Normalizar URLs relativas de Skokka (/image/post/...)
     if (clean.startsWith('//')) clean = `https:${clean}`;
-    if (clean.startsWith('/image/') || clean.startsWith('/')) {
-      clean = `https://do.skokka.com${clean.startsWith('/') ? '' : '/'}${clean}`;
+    if (clean.startsWith('/')) {
+      try { clean = new URL(clean, targetUrl || 'https://do.skokka.com/').href; } catch { return; }
     }
 
     // 3. Extraer patrón de URL de imagen limpia
@@ -179,18 +207,28 @@ function extractSkokkaPhotos(html, targetUrl) {
       return;
     }
 
-    if ((clean.startsWith('http://') || clean.startsWith('https://')) && !photos.includes(clean)) {
-      photos.push(clean);
+    try {
+      const parsed = new URL(clean);
+      const pathName = parsed.pathname.toLowerCase();
+      const isRasterFile = /\.(?:jpe?g|png|webp|avif)$/.test(pathName);
+      const isSkokkaPhoto = pathName.includes('/image/post/') || pathName.includes('/images/post/');
+      if (!isRasterFile && !isSkokkaPhoto) return;
+      parsed.hash = '';
+      const normalized = parsed.href;
+      if (!photos.includes(normalized)) photos.push(normalized);
+    } catch {
+      return;
     }
   }
 
   const decodedHtml = html.replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
   const $ = cheerio.load(decodedHtml);
 
-  // 1. Escanear absolutamente TODOS los elementos DOM y TODOS sus atributos
-  $('*').each((i, el) => {
+  // 1. Escanear solamente atributos que realmente pueden contener una imagen.
+  $('img, source, meta, [data-src], [data-lazy-src], [data-original]').each((i, el) => {
     const attribs = el.attribs || {};
-    Object.keys(attribs).forEach(attrName => {
+    const imageAttributes = ['src', 'srcset', 'data-src', 'data-lazy-src', 'data-original', 'content'];
+    imageAttributes.forEach(attrName => {
       const val = attribs[attrName];
       if (val && typeof val === 'string' && (val.includes('/image/') || val.includes('skokka') || val.includes('.jpg') || val.includes('.png') || val.includes('.webp'))) {
         if (val.includes(',')) {
@@ -250,12 +288,6 @@ function extractSkokkaPhotos(html, targetUrl) {
     const p2 = filename.substring(2, 4);
     const fullSkokkaUrl = `https://do.skokka.com/image/post/${p1}/${p2}/${filename}`;
     pushPhoto(fullSkokkaUrl);
-  }
-
-  // 8. Patrón genérico de imágenes de alta resolución
-  const genericPhotoPattern = /(https?:\/\/[^\s"'<>]+\.(?:jpg|jpeg|png|webp))/gi;
-  while ((match = genericPhotoPattern.exec(decodedHtml)) !== null) {
-    pushPhoto(match[1]);
   }
 
   return photos.slice(0, 15);
@@ -469,7 +501,7 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   const watermarkedPhotos = [];
   const imageDiagnostics = [];
   for (let i = 0; i < rawPhotos.length; i++) {
-    const result = await downloadAndWatermarkPhoto(rawPhotos[i], escortId, i);
+    const result = await downloadAndWatermarkPhoto(rawPhotos[i], escortId, i, targetUrl);
     imageDiagnostics.push(result);
     if (result?.url) watermarkedPhotos.push(result.url);
   }

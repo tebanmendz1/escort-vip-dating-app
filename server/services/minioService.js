@@ -4,7 +4,14 @@ import fs from 'fs';
 import path from 'path';
 
 // Cargar y auto-configurar variables de entorno
-let endpoint = process.env.MINIO_ENDPOINT || 'localhost';
+const isProduction = process.env.NODE_ENV === 'production';
+let endpoint = process.env.MINIO_ENDPOINT || (isProduction ? 'minio' : 'localhost');
+let endpointSource = process.env.MINIO_ENDPOINT ? 'environment' : 'default';
+if (isProduction && ['localhost', '127.0.0.1'].includes(endpoint.toLowerCase())) {
+  endpoint = process.env.MINIO_INTERNAL_ENDPOINT || 'minio';
+  endpointSource = 'production-localhost-override';
+  console.warn(`[MinIO] MINIO_ENDPOINT apuntaba a localhost en producción; usando ${endpoint}.`);
+}
 let port = parseInt(process.env.MINIO_PORT || '9000', 10);
 let useSSL = process.env.MINIO_USE_SSL === 'true';
 const accessKey = process.env.MINIO_ACCESS_KEY || 'escorts-data';
@@ -91,7 +98,8 @@ export async function initMinioBucket(maxRetries = 10, delayMs = 2000) {
 
 export function getMinioDiagnostics() {
   return { available: isMinioAvailable, endpoint, port, useSSL, bucket: bucketName,
-    publicUrlConfigured: Boolean(customPublicUrl), lastError: lastMinioError };
+    publicUrlConfigured: Boolean(customPublicUrl), endpointSource,
+    lastError: lastMinioError };
 }
 
 /**

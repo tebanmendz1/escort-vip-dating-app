@@ -15,9 +15,10 @@ services:
       - MINIO_ENDPOINT=minio
       - MINIO_PORT=9000
       - MINIO_USE_SSL=false
-      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_ACCESS_KEY=escorts-data
       - MINIO_SECRET_KEY=minioadminpassword
       - MINIO_BUCKET_NAME=escort-media
+      - MINIO_PUBLIC_URL=https://console-sigae-ipds-minio.p1dgbf.easypanel.host/
     depends_on:
       - postgres
       - minio
@@ -41,7 +42,7 @@ services:
     restart: always
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_USER: escorts-data
       MINIO_ROOT_PASSWORD: minioadminpassword
     ports:
       - "9000:9000"

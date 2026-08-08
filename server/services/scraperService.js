@@ -224,6 +224,22 @@ export function extractSkokkaPhotos(html, targetUrl) {
   const decodedHtml = html.replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
   const $ = cheerio.load(decodedHtml);
 
+  // Captura enriquecida generada desde el navegador. Las imágenes diferidas de
+  // Skokka viven en PostGallery.props.items y no aparecen en el HTML copiado.
+  const capturedGalleryMatch = html.match(/CITASRD_GALLERY_BASE64:([A-Za-z0-9+/=_-]+)/);
+  if (capturedGalleryMatch) {
+    try {
+      const encoded = capturedGalleryMatch[1].replace(/-/g, '+').replace(/_/g, '/');
+      const captured = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
+      const capturedItems = Array.isArray(captured) ? captured : captured.items;
+      if (Array.isArray(capturedItems)) {
+        capturedItems.forEach(item => pushPhoto(typeof item === 'string' ? item : item?.url));
+      }
+    } catch (error) {
+      console.warn('[Scraper] Captura enriquecida de galería inválida:', error.message);
+    }
+  }
+
   // 1. Escanear solamente atributos que realmente pueden contener una imagen.
   $('img, source, meta, [data-src], [data-lazy-src], [data-original]').each((i, el) => {
     const attribs = el.attribs || {};
@@ -350,6 +366,8 @@ async function fetchSkokkaAdApiPhotos(adId) {
  */
 export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.skokka.com', customCity = 'Santo Domingo', customGender = 'FEMALE') {
   const $ = cheerio.load(html);
+  const canonicalUrl = $('link[rel="canonical"]').attr('href') || $('meta[property="og:url"]').attr('content');
+  if (canonicalUrl) targetUrl = canonicalUrl.split('?')[0];
 
   // 1. Extraer Apodo / Nombre
   let nickname = $('[data-testid="ad-detail-nickname"]').text().trim();
@@ -481,6 +499,8 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
   const adId = adIdMatch ? adIdMatch[1] : null;
 
   let rawPhotos = extractSkokkaPhotos(html, targetUrl);
+  const lazyGalleryPlaceholders = $('.post-gallery img[src^="data:image/"], .gallery-item img[src^="data:image/"]').length;
+  const hasEnrichedGallery = /CITASRD_GALLERY_BASE64:/.test(html);
 
   if (adId) {
     console.log(`[Scraper] 🔍 Buscando fotos adicionales en la API de Skokka para ID de anuncio: ${adId}...`);
@@ -556,6 +576,13 @@ export async function parseAndSaveProfileFromHtml(html, targetUrl = 'https://do.
     persistentPhotosCount: imageDiagnostics.filter(p => p?.storage === 'minio' && p.verified).length,
     localFallbackPhotosCount: imageDiagnostics.filter(p => p?.storage === 'local').length,
     failedPhotosCount: imageDiagnostics.filter(p => !p?.url).length,
+    galleryDiagnostics: {
+      enrichedCapture: hasEnrichedGallery,
+      lazyPlaceholdersFound: lazyGalleryPlaceholders,
+      message: lazyGalleryPlaceholders > 0 && !hasEnrichedGallery
+        ? 'El HTML contiene fotos diferidas sin URL. Usa el capturador de galería del panel para incluirlas.'
+        : null
+    },
     storage: getMinioDiagnostics(),
     imageDiagnostics,
     extractedServices,

@@ -271,8 +271,12 @@
 				<!-- Modo 2: Pegar HTML Directo -->
 				<div id="modeHtmlSection" class="d-none">
 					<form id="scraperHtmlForm">
+						<div class="alert alert-info font-13">
+							<strong>Para capturar toda la galería:</strong> copia el capturador, abre el anuncio de Skokka, abre la consola del navegador (F12), pega el código y presiona Enter. Después pega aquí el contenido copiado automáticamente.
+							<div class="mt-2"><button type="button" id="btnCopyGalleryCapture" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-copy me-1"></i> Copiar capturador de galería</button></div>
+						</div>
 						<div class="mb-3">
-							<label class="form-label font-w600">Pega el Código HTML del Anuncio (Ctrl+U en la página del anuncio -> Copiar Todo) *</label>
+							<label class="form-label font-w600">Pega la captura enriquecida o el código HTML del anuncio *</label>
 							<textarea id="scrapeHtmlContent" class="form-control font-mono" rows="6" placeholder="<!DOCTYPE html>... pega aquí el código HTML..."></textarea>
 						</div>
 
@@ -570,7 +574,18 @@
 			(data.imageDiagnostics || []).filter(item => item.error).forEach((item, index) => {
 				logBox.innerHTML += `<div class="text-warning">[FOTO ${index + 1}] ${String(item.error).replace(/[<>&]/g, '')}</div>`;
 			});
+			if (data.galleryDiagnostics?.message) logBox.innerHTML += `<div class="text-warning">[GALERÍA] ${data.galleryDiagnostics.message}</div>`;
 		}
+
+		const skokkaGalleryCaptureScript = `(async()=>{const sleep=ms=>new Promise(r=>setTimeout(r,ms));const gallery=document.querySelector('.post-gallery');if(!gallery){alert('No se encontró la galería del anuncio.');return;}let instance=gallery.__vueParentComponent;let items=[];for(let i=0;instance&&i<12;i++,instance=instance.parent){const candidate=instance.props&&instance.props.items;if(Array.isArray(candidate)&&candidate.length){items=candidate;break;}}if(!items.length){const slides=[...gallery.querySelectorAll('.gallery-item')];for(const slide of slides){slide.scrollIntoView({block:'center',inline:'center'});await sleep(700);}items=[...gallery.querySelectorAll('img')].map(img=>({url:img.currentSrc||img.src}));}const urls=[...new Map(items.map(item=>[typeof item==='string'?item:item&&item.url,item])).values()].filter(item=>{const url=typeof item==='string'?item:item&&item.url;return url&&/^https?:/i.test(url);});if(!urls.length){alert('No se encontraron URLs de imágenes.');return;}const payload={pageUrl:location.href,items:urls};const bytes=new TextEncoder().encode(JSON.stringify(payload));let binary='';bytes.forEach(byte=>binary+=String.fromCharCode(byte));const marker='<!-- CITASRD_GALLERY_BASE64:'+btoa(binary)+' -->';await navigator.clipboard.writeText(document.documentElement.outerHTML+'\\n'+marker);alert('Galería capturada: '+urls.length+' imágenes. Regresa al panel y pega el contenido.');})()`;
+
+		document.getElementById('btnCopyGalleryCapture').addEventListener('click', async () => {
+			await navigator.clipboard.writeText(skokkaGalleryCaptureScript);
+			const button = document.getElementById('btnCopyGalleryCapture');
+			const original = button.innerHTML;
+			button.innerHTML = '<i class="fa-solid fa-check me-1"></i> Capturador copiado';
+			setTimeout(() => { button.innerHTML = original; }, 2500);
+		});
 
 		// Scraper Submit Form Handler (URL)
 		document.getElementById('scraperForm').addEventListener('submit', async (e) => {
